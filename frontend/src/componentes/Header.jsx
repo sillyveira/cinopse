@@ -1,5 +1,6 @@
 import React from 'react';
 import logo from '../assets/cinopse.png';
+import GoogleButton from './GoogleButton';
 
 function Header() {
   return (
@@ -19,9 +20,7 @@ function Header() {
         </a>
       </nav>
 
-      <button className="cursor-pointer px-6 py-2 bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition-colors">
-        Entrar
-      </button>
+      <GoogleButton/>
     </header>
   );
 }
