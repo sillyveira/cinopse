@@ -20,14 +20,14 @@ function Header() {
   }
 
   return (
-    <header className="flex justify-between items-center p-4 bg-white shadow-sm">
-      <div className="flex items-center">
+    <header className="flex items-center p-4 bg-white shadow-sm">
+      <div className="flex items-center w-1/3">
         <div className="w-25">
           <img src={logo} alt="Logo" />
         </div>
       </div>
 
-      <nav className="flex space-x-8">
+      <nav className="flex space-x-8 w-1/3 justify-center">
         <a href="#" className="text-blue-500 font-medium hover:text-blue-600 transition-colors">
           Home
         </a>
@@ -36,20 +36,22 @@ function Header() {
         </a>
       </nav>
 
-      {isAuthenticated ? (
-        <div className="flex items-center space-x-4">
-          <img src={user.foto} alt={user.nome} className="w-8 h-8 rounded-full" />
-          <span>{user.nome.split(' ')[0]}</span>
-          <button 
-            onClick={logout}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Sair
-          </button>
-        </div>
-      ) : (
-        <GoogleButton/>
-      )}
+      <div className="flex items-center space-x-4 w-1/3 justify-end">
+        {isAuthenticated ? (
+          <>
+            <img src={user.foto} alt={user.nome} className="w-8 h-8 rounded-full" />
+            <span>{user.nome.split(' ')[0]}</span>
+            <button 
+              onClick={logout}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Sair
+            </button>
+          </>
+        ) : (
+          <GoogleButton/>
+        )}
+      </div>
     </header>
   );
 }
