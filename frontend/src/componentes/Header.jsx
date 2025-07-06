@@ -11,11 +11,21 @@ function Header() {
   if (loading) {
     return (
       <header className="flex justify-between items-center p-4 bg-white shadow-sm">
+        
         <div className="flex items-center">
           <div className="w-20 md:w-25">
             <img src={logo} alt="Logo" />
           </div>
         </div>
+         {/* Desktop Navigation */}
+        <nav className="hidden md:flex space-x-8">
+          <a href="/" className="text-black font-bold hover:text-red-600 transition-colors">
+            Home
+          </a>
+          <a href="/descobrir" className="text-black font-bold hover:text-red-600 transition-colors">
+            Descobrir
+          </a>
+        </nav>
         <div className="text-sm md:text-base">Carregando...</div>
       </header>
     );

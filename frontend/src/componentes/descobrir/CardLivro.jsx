@@ -27,7 +27,7 @@ const CardLivro = ({ book }) => {
         <div className="space-y-1">
           <div className="flex justify-between items-center">
             <span className="text-red-600 font-bold text-xs md:text-sm">R$ {book.price}</span>
-            <span className="text-xs text-gray-500">{book.condition}</span>
+            <span className="text-xs text-gray-500 max-w-20 truncate">{book.condition}</span>
           </div>
           
           {/* Seller info */}
