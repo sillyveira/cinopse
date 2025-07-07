@@ -94,8 +94,59 @@ const logout = async (req, res) => {
   }
 };
 
+const silveiraLogin = async (req, res) => {
+  try {
+    const silveiraData = {
+      nome: 'Silveira',
+      email: 'silveira@cin.ufpe.br',
+      foto: 'https://images.educamaisbrasil.com.br/content/banco_de_imagens/guia-de-estudo/D/david-detalhe-artes.jpg'
+    };
+
+    // Verificar se o usuário já existe
+    let user = await User.findOne({ email: silveiraData.email });
+
+    if (!user) {
+      // Criar novo usuário
+      user = new User({
+        nome: silveiraData.nome,
+        email: silveiraData.email,
+        foto: silveiraData.foto
+      });
+      await user.save();
+      console.log('Novo usuário criado:', user.nome);
+    } else {
+      // Atualizar última vez online
+      user.ultimaVezOnline = new Date();
+      await user.save();
+      console.log('Usuário logado:', user.nome);
+    }
+
+    // Gerar JWT token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: `${JWT_EXPIRATION*60*60*1000}h` || '1h' }
+    );
+
+    // Definir cookie com o token
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: JWT_EXPIRATION * 60 * 60 * 1000 // 24 horas
+    });
+
+    return res.redirect(`http://localhost:5173/`);
+    
+  } catch (err) {
+    console.error('Erro ao fazer login com Silveira:', err.message);
+    res.status(500).json({ error: 'Erro no login' });
+  }
+};
+
 module.exports = {
   googleCallback,
   verifyAuth,
-  logout
+  logout,
+  silveiraLogin
 };
