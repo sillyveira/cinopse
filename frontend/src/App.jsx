@@ -1,23 +1,47 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+
+// COMPONENTES
 import Header from './componentes/Header'
 import Footer from './componentes/Footer'
+import BotaoMensagem from './componentes/BotaoMensagem'
+
+// PROVIDERS
+import { AuthProvider } from './context/Auth'
+import { DataProvider } from './context/DataContext'
+
+// PÁGINAS
+import Chat from './pages/Chat'
 import Home from './pages/Home'
 import Descobrir from './pages/Descobrir'
 
+function AppContent() {
+  const location = useLocation();
+  const chatAberto = location.pathname === '/chat'; // Verifica se está no chat, se sim, não exibe o botão de mensagem
+
+  return (
+    <div className='h-screen flex flex-col'>
+      <Header />
+      <div className='flex-1 overflow-hidden'>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/descobrir" element={<Descobrir/>} />
+          <Route path="/chat" element={<Chat/>}/>
+        </Routes>
+      </div>
+      {!chatAberto && <BotaoMensagem />}
+    </div>
+  );
+}
+
 function App() {
   return (
-    <Router>
-      <div className='h-screen flex flex-col'>
-        <Header />
-        <div className='flex-1 overflow-hidden'>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/descobrir" element={<Descobrir/>}></Route>
-          </Routes>
-        </div>
-      </div>
-      
-    </Router>
+    <AuthProvider>
+      <DataProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </DataProvider>
+    </AuthProvider>
   )
 }
 
