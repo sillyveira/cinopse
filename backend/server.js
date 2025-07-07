@@ -1,23 +1,36 @@
 require('dotenv').config();
 
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
-const { connectToDatabase } = require('./models/database');
-const authRoutes = require('./routes/authRoutes');
+const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 
+const { connectToDatabase } = require('./models/database');
+const socketHandler = require('./socketHandler');
 
+const authRoutes = require('./routes/authRoutes');
 const categoriaRoutes = require('./routes/categoriaRoutes');
 const livroRoutes = require('./routes/livroRoutes');
+const userRoutes = require('./routes/userRoutes');
+const conversaRoutes = require('./routes/conversaRoutes');
+const mensagemRoutes = require('./routes/mensagemRoutes');
 
 const app = express();
-const PORT = process.env.PORT;
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST']
+  }
+});
 
+// Middleware
 app.use(cors({
   origin: 'http://localhost:5173',
-  credentials: true, // para conseguir enviar cookies
+  credentials: true // para conseguir enviar cookies
 }));
-
 app.use(cookieParser());
 app.use(express.json());
 
@@ -32,8 +45,14 @@ connectToDatabase();
 app.use('/auth', authRoutes);
 app.use('/categorias', categoriaRoutes);
 app.use('/livros', livroRoutes);
+app.use('/users', userRoutes);
+app.use('/conversas', conversaRoutes);
+app.use('/mensagens', mensagemRoutes);
 
+// iniciar Websocket.
+socketHandler(io);
 
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
   console.log(`Servidor ouvindo na porta ${PORT}`);
 });
