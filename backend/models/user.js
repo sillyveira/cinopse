@@ -60,6 +60,6 @@ userSchema.methods.incrementarLivrosVendidos = function() {
   return this.save();
 };
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema, 'usuarios');
 
 module.exports = User;
