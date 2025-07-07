@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Send, X } from "lucide-react";
 import { useAuth } from "../context/Auth";
 import io from "socket.io-client";
+import Modal from "../componentes/Modal";
 // TODO: Implementar a página de chat com as seguintes funcionalidades:
 
 // - Exibir mensagens de uma conversa selecionada
@@ -20,6 +21,10 @@ export default function Chat() {
   // Estado para armazenar a conexão do WebSocket
   const [socket, setSocket] = useState(null);
 
+  // Estado para controlar a abertura do modal
+  const [modalAberto, setModalAberto] = useState(false);
+
+  // Estado para armazenar o texto da mensagem a ser enviada
   const [textoMensagem, setTextoMensagem] = useState("");
 
   // Estado para armazenar o usuário da conversa selecionada
@@ -27,6 +32,9 @@ export default function Chat() {
 
   // Estado para armazenar as conversas do usuário
   const [conversas, setConversas] = useState([]);
+
+  // Referência do final da lista de mensagens (para rolar automaticamente)
+  const messagesEndRef = useRef(null);
 
   // Estado para armazenar as mensagens da conversa selecionada
   const [mensagens, setMensagens] = useState([
@@ -56,10 +64,16 @@ export default function Chat() {
     },
   ]);
 
+  // useEffect para rolar automaticamente para o final da lista de mensagens
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [mensagens]);
+
+  // useEffect para conectar ao WebSocket quando o usuário estiver logado
   useEffect(() => {
     if (user) {
       const newSocket = io("http://localhost:3000", {
-        query:{ùserId: user.id},
+        query: { ùserId: user.id },
       });
 
       newSocket.on("connect", () => {
@@ -80,7 +94,8 @@ export default function Chat() {
         newSocket.close();
         console.log("WebSocket desconectado");
       };
-    }}, [user]);
+    }
+  }, [user]);
   // Função para selecionar uma conversa e exibir as mensagens
   const selecionarConversa = async (conversa) => {
     setUsuarioConversa({
@@ -169,23 +184,40 @@ export default function Chat() {
 
   return (
     <>
-      <div className="flex h-screen">
+      <div className="flex h-full">
         {/* Conversas */}
-        <div className="text-2xl font-bold h-full p-4 w-104">
-          <h1>Conversas Recentes</h1>
-          <hr />
+        <div className="flex flex-col h-full w-80 border-r border-gray-200">
+          <div className="p-4 border-b border-gray-200">
+            <h1 className="text-xl font-bold text-center mb-3">
+              Conversas Recentes
+            </h1>
 
-          {conversas.length === 0 ? (
-            <div className="text-gray-500">Nenhuma conversa encontrada.</div>
-          ) : (
-            conversas.map((conversa) => (
-              <ConversaItem
-                key={conversa._id}
-                conversa={conversa}
-                selecionarConversa={selecionarConversa}
-              />
-            ))
-          )}
+            <button
+              className="w-full cursor-pointer bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 active:bg-red-800 transition-colors shadow-md"
+              onClick={() => setModalAberto(true)}
+            >
+              <div className="flex items-center justify-center gap-3">
+                <Send size={20} className="text-white" />
+                <span className="font-medium">Nova Conversa</span>
+              </div>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {conversas.length === 0 ? (
+              <div className="text-gray-500 text-center p-4">
+                Nenhuma conversa encontrada.
+              </div>
+            ) : (
+              conversas.map((conversa) => (
+                <ConversaItem
+                  key={conversa._id}
+                  conversa={conversa}
+                  selecionarConversa={selecionarConversa}
+                />
+              ))
+            )}
+          </div>
         </div>
 
         {/* ---------------------------------------------*/}
@@ -193,41 +225,48 @@ export default function Chat() {
         {/* Tela das Conversas */}
         {/* Exibe a conversa selecionada ou uma mensagem padrão se nenhuma for selecionada */}
         {usuarioConversa?.id ? (
-          <div className="text-gray-600 mb-2 bg-purple-300 h-full w-full">
+          <div className="flex flex-col h-full w-full bg-gray-100">
+            {/* Header fixo */}
             <HeaderConversa
               usuarioConversa={usuarioConversa}
               fecharConversa={fecharConversa}
             />
-            <div className="overflow-y-auto">
+
+            {/* Área de mensagens com scroll e altura flexível */}
+            <div className="flex-1 overflow-y-auto">
               <TelaMensagens
                 mensagens={mensagens}
                 usuarioConversa={usuarioConversa}
                 usuario={user}
+                messagesEndRef={messagesEndRef}
               />
-              {/* Formulário de Envio de Mensagem */}
-              <form
-                className="flex items-center p-4 bg-white border-t border-gray-200"
-                >
-                <input
-                  type="text" 
-                  className="flex-1 border border-gray-300 rounded-lg p-2 mr-2"
-                  placeholder="Digite sua mensagem..."
-                  value={textoMensagem}
-                  onChange={(e) => setTextoMensagem(e.target.value)}
-                  ></input>
-                <button
-                  type="button"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                  onClick={handleSendMessage}
-                >
-                  <Send size={20} />
-                </button>
-                </form>
             </div>
-          
+
+            {/* Formulário fixo no final */}
+            <form
+              className="flex items-center p-4 bg-white border-t border-gray-200"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+            >
+              <input
+                type="text"
+                className="flex-1 border border-gray-300 rounded-lg p-2 mr-2"
+                placeholder="Digite sua mensagem..."
+                value={textoMensagem}
+                onChange={(e) => setTextoMensagem(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Send size={20} />
+              </button>
+            </form>
           </div>
         ) : (
-          <div className=" mb-2 bg-gray-100 h-full w-full flex items-center justify-center ">
+          <div className="mb-2 bg-gray-100 h-full w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
               <Send className="text-red-800" size={62} />
               <h1 className="text-2xl">
@@ -236,22 +275,31 @@ export default function Chat() {
             </div>
           </div>
         )}
+
         {/* ------------- */}
       </div>
 
-      <div className="text-gray-600 mb-8">
-        Esta página será implementada em breve!
-      </div>
-      <div className="animate-spin rounded-full h-12 w-12 border-b- 2 border-blue-600 mb-4"></div>
-      <div className="text-gray-500">Carregando...</div>
-      <div>Conversas</div>
+      {/* Modal para iniciar nova conversa */}
+      <Modal
+        isOpen={modalAberto}
+        onClose={() => setModalAberto(false)}
+        title="Modal para Nova Conversa"
+      >
+        <p>WIP! 🚧</p>
+        <button
+          onClick={() => setModalAberto(false)}
+          className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Aceitar
+        </button>
+      </Modal>
     </>
   );
 }
 
-function TelaMensagens({ mensagens, usuario, usuarioConversa }) {
+function TelaMensagens({ mensagens, usuario, usuarioConversa, messagesEndRef }) {
   return (
-    <div className="overflow-y-auto p-4 bg-gray-100">
+    <div className="flex-1 overflow-y-auto p-4 bg-gray-100">
       {mensagens.length === 0 ? (
         <div className="text-gray-500">Nenhuma mensagem encontrada.</div>
       ) : (
@@ -276,6 +324,7 @@ function TelaMensagens({ mensagens, usuario, usuarioConversa }) {
                   {formatarUltimaMensagem(msg.timestamp)}
                 </span>
               </div>
+              <div ref={messagesEndRef} />
             </div>
           )
         )
@@ -283,7 +332,6 @@ function TelaMensagens({ mensagens, usuario, usuarioConversa }) {
     </div>
   );
 }
-
 
 // Imagem e nome do usuário na conversa.
 function HeaderConversa({ usuarioConversa, fecharConversa }) {
