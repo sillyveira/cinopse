@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Livro = require('../models/livro');
 const User = require('../models/user');
 const Categoria = require('../models/categoria');
+const Avaliacao = require('../models/avaliacao');
 
 // Conectar ao MongoDB
 mongoose.connect(process.env.MONGO_URI);
@@ -13,8 +14,9 @@ const seedDatabase = async () => {
     const livroCount = await Livro.countDocuments();
     const userCount = await User.countDocuments();
     const categoriaCount = await Categoria.countDocuments();
+    const avaliacaoCount = await Avaliacao.countDocuments();
 
-    if (livroCount > 0 && userCount > 0 && categoriaCount > 0) {
+    if (livroCount > 0 && userCount > 0 && categoriaCount > 0 && avaliacaoCount > 0) {
       console.log('Banco de dados já possui dados. Cancelando seed...');
       return;
     }
@@ -23,6 +25,7 @@ const seedDatabase = async () => {
     await Livro.deleteMany({});
     await User.deleteMany({});
     await Categoria.deleteMany({});
+    await Avaliacao.deleteMany({});
 
     // Criar categorias
     const categorias = await Categoria.insertMany([
@@ -223,6 +226,76 @@ const seedDatabase = async () => {
 
     await Livro.insertMany(livros);
 
+    // Criar avaliações
+    const avaliacoes = [
+      {
+        nomeUsuario: usuarios[1].nome,
+        idUsuario: usuarios[1]._id,
+        nota: 5,
+        comentario: 'Excelente vendedor! Livro em perfeito estado, entrega rápida.',
+        idVendedor: usuarios[0]._id,
+        nomeLivro: 'O Pequeno Príncipe'
+      },
+      {
+        nomeUsuario: usuarios[2].nome,
+        idUsuario: usuarios[2]._id,
+        nota: 4,
+        comentario: 'Bom atendimento, livro conforme descrito.',
+        idVendedor: usuarios[1]._id,
+        nomeLivro: '1984'
+      },
+      {
+        nomeUsuario: usuarios[3].nome,
+        idUsuario: usuarios[3]._id,
+        nota: 5,
+        comentario: 'Vendedor muito atencioso, recomendo!',
+        idVendedor: usuarios[2]._id,
+        nomeLivro: 'Dom Casmurro'
+      },
+      {
+        nomeUsuario: usuarios[0].nome,
+        idUsuario: usuarios[0]._id,
+        nota: 5,
+        comentario: 'Perfeito! Livro técnico em ótimo estado.',
+        idVendedor: usuarios[3]._id,
+        nomeLivro: 'Algoritmos: Teoria e Prática'
+      },
+      {
+        nomeUsuario: usuarios[1].nome,
+        idUsuario: usuarios[1]._id,
+        nota: 4,
+        comentario: 'Entrega rápida, livro bem conservado.',
+        idVendedor: usuarios[4]._id,
+        nomeLivro: 'Harry Potter e a Pedra Filosofal'
+      },
+      {
+        nomeUsuario: usuarios[3].nome,
+        idUsuario: usuarios[3]._id,
+        nota: 3,
+        comentario: 'Livro ok, mas demorou um pouco para chegar.',
+        idVendedor: usuarios[0]._id,
+        nomeLivro: 'O Código Da Vinci'
+      },
+      {
+        nomeUsuario: usuarios[4].nome,
+        idUsuario: usuarios[4]._id,
+        nota: 5,
+        comentario: 'Adorei! Vendedora super educada e livro lindo.',
+        idVendedor: usuarios[1]._id,
+        nomeLivro: 'A Culpa é das Estrelas'
+      },
+      {
+        nomeUsuario: usuarios[0].nome,
+        idUsuario: usuarios[0]._id,
+        nota: 4,
+        comentario: 'Bom negócio, livro técnico por um preço justo.',
+        idVendedor: usuarios[2]._id,
+        nomeLivro: 'Estruturas de Dados e Algoritmos'
+      }
+    ];
+
+    await Avaliacao.insertMany(avaliacoes);
+
     // Atualizar contadores de categorias
     for (const categoria of categorias) {
       const count = await Livro.countDocuments({ categoria: categoria._id });
@@ -233,6 +306,7 @@ const seedDatabase = async () => {
     console.log(`📚 ${livros.length} livros adicionados`);
     console.log(`👥 ${usuarios.length} usuários adicionados`);
     console.log(`🏷️ ${categorias.length} categorias adicionadas`);
+    console.log(`⭐ ${avaliacoes.length} avaliações adicionadas`);
 
   } catch (error) {
     console.error('❌ Erro ao popular o banco de dados:', error);
