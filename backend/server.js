@@ -45,7 +45,7 @@ connectToDatabase();
 app.use('/auth', authRoutes);
 app.use('/categorias', categoriaRoutes);
 app.use('/livros', livroRoutes);
-app.use('/users', userRoutes);
+app.use('/usuarios', userRoutes);
 app.use('/conversas', conversaRoutes);
 app.use('/mensagens', mensagemRoutes);
 
