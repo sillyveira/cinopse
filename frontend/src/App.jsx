@@ -13,6 +13,7 @@ import { DataProvider } from './context/DataContext'
 import Chat from './pages/Chat'
 import Home from './pages/Home'
 import Descobrir from './pages/Descobrir'
+import Perfil from './pages/Perfil'
 
 function AppContent() {
   const location = useLocation();
@@ -26,6 +27,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/descobrir" element={<Descobrir/>} />
           <Route path="/chat" element={<Chat/>}/>
+          <Route path="/perfil/:id_usuario" element={<Perfil/>}></Route>
         </Routes>
       </div>
       {!chatAberto && <BotaoMensagem />}
