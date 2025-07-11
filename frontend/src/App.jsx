@@ -14,6 +14,8 @@ import Chat from './pages/Chat'
 import Home from './pages/Home'
 import Descobrir from './pages/Descobrir'
 import Perfil from './pages/Perfil'
+import PaginaLivro from './pages/PaginaLivro'
+
 
 function AppContent() {
   const location = useLocation();
@@ -28,6 +30,7 @@ function AppContent() {
           <Route path="/descobrir" element={<Descobrir/>} />
           <Route path="/chat" element={<Chat/>}/>
           <Route path="/perfil/:id_usuario" element={<Perfil/>}></Route>
+          <Route path="/livros/:idLivro" element={<PaginaLivro/>}></Route>
         </Routes>
       </div>
       {!chatAberto && <BotaoMensagem />}

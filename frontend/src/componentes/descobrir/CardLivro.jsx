@@ -1,9 +1,14 @@
 import React from 'react';
 import { Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 const CardLivro = ({ book }) => {
+  const navigate = useNavigate();
   return (
-    <div className="bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-4 mx-1 md:mx-2 min-w-0 flex-shrink-0 hover:shadow-xl transition-shadow duration-300 h-80 md:h-96 flex flex-col">
+    <div
+    onClick={() => navigate(`/livros/${book.id}`)}
+    className="cursor-pointer bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-4 mx-1 md:mx-2 min-w-0 flex-shrink-0 hover:shadow-xl transition-shadow duration-300 h-80 md:h-96 flex flex-col">
       <div className=" bg-gray-200 rounded-md md:rounded-lg mb-2 md:mb-4">
         <img 
           src={book.image || '/placeholder-book.jpg'} 

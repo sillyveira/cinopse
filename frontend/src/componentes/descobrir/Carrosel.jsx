@@ -56,7 +56,7 @@ const Carrosel = ({ books, title }) => {
           </button>
         )}
 
-        {/* Cards Container */}
+        {/* Container dos Livros */}
         <div className="overflow-hidden mx-6 md:mx-12 py-2 md:py-3">
           <div 
             className="flex transition-transform duration-300 ease-in-out"
@@ -76,7 +76,7 @@ const Carrosel = ({ books, title }) => {
           </div>
         </div>
 
-        {/* Next Button */}
+        {/* Botão de Próximo */}
         {currentIndex < maxIndex && (
           <button
             onClick={nextSlide}
@@ -87,7 +87,7 @@ const Carrosel = ({ books, title }) => {
         )}
       </div>
 
-      {/* Dots Indicator - Only show if there are multiple pages */}
+      {/* Indicador de Pontos*/}
       {maxIndex > 0 && (
         <div className="flex justify-center mt-4 md:mt-6 space-x-1 md:space-x-2">
           {Array.from({ length: maxIndex + 1 }).map((_, index) => (
