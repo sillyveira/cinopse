@@ -17,8 +17,8 @@ const venda_schema = new mongoose.Schema({
     },
     Avaliacao: {
         nota: Number,
-        comentario: string 
-    }
+        comentario: string,
+    } 
 }) 
 
 module.exports = mongoose.model('Venda', venda_schema)
