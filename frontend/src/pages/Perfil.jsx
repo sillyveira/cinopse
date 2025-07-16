@@ -21,7 +21,7 @@ function Perfil() {
     async function buscarDados() {
       try {
         // Faz requisição para o backend
-        const resposta = await fetch(`http://localhost:3000/usuarios/${id_usuario}`);        // TODO (trabalho para wesley): Refatorar essa parte para services/api.js
+        const resposta = await fetch(`http://localhost:3000/usuarios/perfil/${id_usuario}`);        // TODO (trabalho para wesley): Refatorar essa parte para services/api.js
         const dados = await resposta.json();
         setUsuario(dados);
       } catch (erro) {

@@ -96,7 +96,7 @@ const userController = {
 
       // Busca os salvos do usuário
       const salvos = await Salvos.find({ usuario: userId })
-        .populate('livro', 'titulo autor preco foto')
+        .populate('livro', 'titulo autor preco fotos condicao categoria')
         .sort({ dataSalvo: -1 });
 
       res.status(200).json(salvos);
@@ -111,7 +111,7 @@ const userController = {
 
   salvarLivro: async (req, res) => {
     try {
-      const userId = req.user._id;
+      const userId = req.user.id;
       const { livroId } = req.body;
 
       // Verifica se o usuário está autenticado
@@ -125,7 +125,7 @@ const userController = {
       }
 
       const salvo = await Salvos.findOne({ usuario: userId, livro: livroId });
-
+      console.log('Salvo encontrado:', salvo);
       if (!salvo){   
       // Cria um novo registro de salvo
       const novoSalvo = new Salvos({
@@ -138,7 +138,7 @@ const userController = {
 
       } else {
 
-        Salvos.deleteOne({ usuario: userId, livro: livroId });
+        await Salvos.deleteOne({ usuario: userId, livro: livroId });
         return res.status(200).json({ message: 'Livro removido dos salvos com sucesso' });
 
       }

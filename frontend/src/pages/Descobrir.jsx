@@ -13,18 +13,6 @@ const Descobrir = () => {
     error 
   } = useData();
 
-  const formatBookData = (livro) => ({
-    id: livro._id,
-    title: livro.titulo,
-    author: livro.autor,
-    price: livro.preco.toFixed(2),
-    condition: livro.condicao,
-    image: livro.fotos && livro.fotos.length > 0 ? livro.fotos[0] : "",
-    seller: livro.vendedor?.nome || "Vendedor",
-    rating: "4.5", // TODO - implementar sistema de avaliação
-    views: livro.visualizacoes
-  });
-
   const formatCategoryData = (categoria) => ({
     id: categoria._id,
     name: categoria.nome,
@@ -63,14 +51,14 @@ const Descobrir = () => {
     );
   }
 
-  const livrosRecentes = getLivrosRecentes().map(formatBookData);
-  const livrosPopulares = getLivrosPopulares().map(formatBookData);
+  const livrosRecentes = getLivrosRecentes()
+  const livrosPopulares = getLivrosPopulares();
   const categoriasFormatadas = categorias.map(formatCategoryData);
 
   // Pegar livros de ficção para a última seção
   const categoriaFiccao = categorias.find(cat => cat.nome.toLowerCase().includes('ficção'));
   const livrosFiccao = categoriaFiccao ? 
-    getLivrosPorCategoria(categoriaFiccao._id).map(formatBookData) : 
+    getLivrosPorCategoria(categoriaFiccao._id) : 
     livrosPopulares.slice(0, 5);
 
   return (
