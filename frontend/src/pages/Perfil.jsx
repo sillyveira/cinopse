@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 // Página integrada com o backend para exibir o perfil de um usuário específico
@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 function Perfil() {
   // Extrai o parâmetro id_usuario da URL
   const { id_usuario } = useParams();
+  const navigate = useNavigate();
   
   // Estados para armazenar dados do usuário e controle de carregamento
   const [usuario, setUsuario] = useState(null);
@@ -20,7 +21,7 @@ function Perfil() {
     async function buscarDados() {
       try {
         // Faz requisição para o backend
-        const resposta = await fetch(`http://localhost:3000/usuarios/${id_usuario}`);        // TODO (trabalho para wesley): Refatorar essa parte para services/api.js
+        const resposta = await fetch(`http://localhost:3000/usuarios/perfil/${id_usuario}`);        // TODO (trabalho para wesley): Refatorar essa parte para services/api.js
         const dados = await resposta.json();
         setUsuario(dados);
       } catch (erro) {
@@ -33,6 +34,11 @@ function Perfil() {
 
     buscarDados();
   }, [id_usuario]);
+
+  // Função para redirecionar para a página de "Meus Salvos"
+  const irParaMeusSalvos = () => {
+    navigate('/perfil/meus-salvos');
+  };
 
   // Função para formatar as datas
   const formatarData = (dataStr) => {
@@ -52,6 +58,16 @@ function Perfil() {
 
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md overflow-y-auto">
+      {/* Botão "Meus Salvos" */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={irParaMeusSalvos}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Meus Salvos
+        </button>
+      </div>
+
       <div className="flex items-center space-x-6">
         <img
           src={usuario.foto}

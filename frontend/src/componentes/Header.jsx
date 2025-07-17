@@ -12,7 +12,6 @@ function Header() {
   if (loading) {
     return (
       <header className="flex justify-between items-center p-4 bg-white shadow-sm">
-        
         <div className="flex items-center">
           <div className="w-20 md:w-25">
             <img src={logo} alt="Logo" />
@@ -58,7 +57,7 @@ function Header() {
             {isAuthenticated ? (
               <>
                 <img src={user.foto} alt={user.nome} className="w-8 h-8 rounded-full" />
-                <span className="text-sm lg:text-base">{user.nome.split(' ')[0]}</span>
+                <a href={`/perfil/${user.id}`}><span className="text-sm lg:text-base">{user.nome.split(' ')[0]}</span></a>
                 <button 
                   onClick={logout}
                   className="px-3 py-1 lg:px-4 lg:py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm lg:text-base"
@@ -100,7 +99,7 @@ function Header() {
               <div className="flex flex-col space-y-3">
                 <div className="flex items-center space-x-3">
                   <img src={user.foto} alt={user.nome} className="w-8 h-8 rounded-full" />
-                  <span>{user.nome.split(' ')[0]}</span>
+                  <a href={`/perfil/${user.id}`}><span>{user.nome.split(' ')[0]}</span></a>
                 </div>
                 <button 
                   onClick={logout}

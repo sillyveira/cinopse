@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const mongoose = require('mongoose');
 const { calcularMedia, buscarUltimas } = require('./avaliacaoController');
+const Salvos = require('../models/salvos');
 
 const userController = {
   // Buscar usuários por nome
@@ -80,6 +81,74 @@ const userController = {
       res.status(500).json({
         error: 'Erro interno do servidor',
         message: error.message
+      });
+    }
+  },
+
+  meusSalvos: async (req, res) => {
+    try {
+      const userId = req.user._id;
+
+      // Verifica se o usuário está autenticado
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+      }
+
+      // Busca os salvos do usuário
+      const salvos = await Salvos.find({ usuario: userId })
+        .populate('livro', 'titulo autor preco fotos condicao categoria')
+        .sort({ dataSalvo: -1 });
+
+      res.status(200).json(salvos);
+    } catch (error) {
+      console.error('Erro ao buscar salvos do usuário:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor', 
+        message: error.message 
+      });
+    }
+  },
+
+  salvarLivro: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { livroId } = req.body;
+
+      // Verifica se o usuário está autenticado
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+      }
+
+      // Verifica se o livroId foi fornecido
+      if (!livroId) {
+        return res.status(400).json({ error: 'ID do livro não fornecido' });
+      }
+
+      const salvo = await Salvos.findOne({ usuario: userId, livro: livroId });
+      console.log('Salvo encontrado:', salvo);
+      if (!salvo){   
+      // Cria um novo registro de salvo
+      const novoSalvo = new Salvos({
+        usuario: userId,
+        livro: livroId
+      });
+
+      await novoSalvo.save();
+      return res.status(200).json({ message: 'Livro salvo com sucesso'});
+
+      } else {
+
+        await Salvos.deleteOne({ usuario: userId, livro: livroId });
+        return res.status(200).json({ message: 'Livro removido dos salvos com sucesso' });
+
+      }
+
+      
+    } catch (error) {
+      console.error('Erro ao salvar livro:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor', 
+        message: error.message 
       });
     }
   }
