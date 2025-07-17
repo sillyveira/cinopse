@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const reserva_Schema = new mongoose.Schema ({
+const reservaSchema = new mongoose.Schema ({
     reservadorid: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -15,14 +15,20 @@ const reserva_Schema = new mongoose.Schema ({
         type: Date,
         required: true
     },
-    status_r: {
+    statusreserva: {
         type: Boolean,
         default: true
     },
     livroid: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Livro'
+        ref: 'Livro',
+        required: true
     }
+}, { 
+    timestamps: true // Adiciona createdAt e updatedAt automaticamente
 })
 
-module.exports = mongoose.model('Reserva', reserva_Schema)
+reservaSchema.index({ reservadorid: 1 });
+reservaSchema.index({ livroid: 1 });
+
+module.exports = mongoose.model('Reserva', reservaSchema)
