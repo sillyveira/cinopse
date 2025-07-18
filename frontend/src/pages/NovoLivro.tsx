@@ -35,10 +35,24 @@ const FileInput = ({ index, file, onChange, IconComponent }) => (
   </div>
 );
 
+function convertFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result); // retorna base64
+        reader.onerror = error => reject(error);
+    });
+}
+
+async function convertFilesToBase64(filesArray) {
+    const base64Array = await Promise.all(filesArray.map(file => convertFileToBase64(file)));
+    return base64Array;
+}
+
 const Modal = ({ isOpen, onClose, images, onImageChange }) => {
   if (!isOpen) return null;
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-500/20 backdrop-blur-sm">
       <div className="bg-white rounded-lg p-6 w-96">
         <h2 className="text-xl font-semibold mb-4">Envie até 5 imagens</h2>
         {[...Array(5)].map((_, idx) => (
@@ -129,7 +143,8 @@ export default function NovoLivro(){
             return
         }
 
-        console.log('Dados convertidos em JSON',JSON.stringify(form))
+
+        const imagensConvertidas = await convertFilesToBase64(fotos)
 
         const response = await fetch('http://localhost:3000/livros', {
             method: 'POST',
@@ -138,7 +153,7 @@ export default function NovoLivro(){
             },
             body: JSON.stringify({
                 ...form,
-                fotos: fotos
+                fotos: imagensConvertidas
             }),
             credentials: 'include'
         })
@@ -238,7 +253,7 @@ export default function NovoLivro(){
                 </div>
                 <div className="w-full">
                     <strong><p>Descrição</p></strong>
-                    <input className="flex border border-[#A29797] rounded-[12px] h-38 w-full pl-4 items-start text-black" type="text" placeholder="Descrição"
+                    <textarea className="flex border border-[#A29797] rounded-[12px] h-40 w-full pl-4 items-start py-2 text-black" placeholder="Descrição"
                     name="descricao"
                     value={form.descricao}
                     onChange={(e)=> {
@@ -280,7 +295,6 @@ export default function NovoLivro(){
                 <button className="flex flex-row w-full h-12 bg-[#7D474D] border border-[#7D474D] text-white rounded-[12px] p-2 items-center justify-center cursor-pointer" type="submit"><strong>Cadastrar livro</strong></button>
             </form>
             </div>
-
             <Modal
             isOpen={isOpen}
             onClose={toggleModal}
