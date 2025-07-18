@@ -7,7 +7,9 @@ export default function CardImagem(props){
 
     useEffect(()=> {
         setIsSet(t => !t)
+        if(props.isTrue === null) setIsSet(false)
     }, [props.isTrue])
+
 
     return(
         <div className="flex flex-row w-full h-12 border border-[#A29797] rounded-[12px] p-2 justify-around items-center">
