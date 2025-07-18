@@ -16,6 +16,7 @@ import Descobrir from './pages/Descobrir'
 import Perfil from './pages/Perfil'
 import PaginaLivro from './pages/PaginaLivro'
 import NovoLivro from './pages/NovoLivro'
+import MeusAnuncios from './pages/MeusAnuncios'
 
 import MeusSalvos from './pages/MeusSalvos'
 
@@ -58,6 +59,11 @@ function AppContent() {
             </RotaPrivada>
           } />
           <Route path="/livros/:idLivro" element={<PaginaLivro />} />
+          <Route path='/perfil/meus-anuncios' element={
+            <RotaPrivada>
+              <MeusAnuncios/>
+            </RotaPrivada>
+          }/>
         </Routes>
       </div>
       {!chatAberto && <BotaoMensagem />}
