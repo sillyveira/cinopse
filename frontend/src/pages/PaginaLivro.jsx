@@ -88,6 +88,7 @@ export default function PaginaLivroEstilizada() {
   const [salvando, setSalvando] = useState(false);
   const [isSalvo, setIsSalvo] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
+  const [desativado, setDesativado] = useState(false);
 
   useEffect(() => {
     let abort = false;
@@ -125,7 +126,6 @@ export default function PaginaLivroEstilizada() {
       if (!response.ok) throw new Error("Não foi possível salvar o livro.");
       const data = await response.json();
       setIsSalvo(data?.saved ?? true);
-      alert(data?.message || "Livro salvo!");
     } catch (err) {
       setErro(err.message);
     } finally {
@@ -158,7 +158,6 @@ export default function PaginaLivroEstilizada() {
       });
       if (!response.ok) throw new Error("Não foi possível reservar o livro.");
       const data = await response.json();
-      alert(data?.message || "Livro reservado! Entraremos em contato.");
     } catch (err) {
       setErro(err.message);
     }
@@ -201,7 +200,7 @@ export default function PaginaLivroEstilizada() {
           type="button"
           disabled={salvando}
           onClick={() => salvarLivro(livro._id)}
-          className="flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50"
+          className="cursor-pointer flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50"
           style={{ color: COLOR_PRIMARY }}
         >
           <span>{isSalvo ? "Salvo" : "Salvar"}</span>
@@ -285,7 +284,9 @@ export default function PaginaLivroEstilizada() {
           </section>
 
           {/* Card vendedor */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 lg:p-6 shadow-sm space-y-4">
+          <section 
+          onClick={() => navigate(`/perfil/${vendedor?._id}`)}
+          className="cursor-pointer rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 lg:p-6 shadow-sm space-y-4 group">
             <header className="flex items-start gap-4">
               <img
                 src={vendedor?.foto || "https://via.placeholder.com/80x80?text=?"}
@@ -301,7 +302,7 @@ export default function PaginaLivroEstilizada() {
               </div>
             </header>
 
-            <ul className="space-y-1 text-sm text-gray-700">
+            {/* <ul className="space-y-1 text-sm text-gray-700">
               {vendedor?.localizacao && (
                 <li>📍 <span className="font-medium">Localização:</span> {vendedor.localizacao}</li>
               )}
@@ -331,7 +332,7 @@ export default function PaginaLivroEstilizada() {
               {vendedor?.observacaoPreco && (
                 <li>💬 {vendedor.observacaoPreco}</li>
               )}
-            </ul>
+            </ul> */}
           </section>
 
           {/* Botões de ação */}
@@ -339,17 +340,20 @@ export default function PaginaLivroEstilizada() {
             <button
               type="button"
               onClick={() => iniciarConversaVendedor(vendedor?._id)}
-              className="flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-800 text-white font-medium hover:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
+              className="cursor-pointer flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-800 text-white font-medium hover:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
             >
               💬 Chat com Vendedor
             </button>
-            <button
-              type="button"
-              onClick={() => reservarLivro(livro._id)}
-              className="active flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-100 text-rose-800 font-medium hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
-            >
-              📚 Reservar livro
-            </button>
+           <button
+  type="button"
+  onClick={!desativado ? () => reservarLivro(livro._id) : null}
+  disabled={true}
+  className={` flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full 
+    ${desativado ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "cursor-pointer bg-rose-100 text-rose-800 hover:bg-rose-200"}
+    font-medium transition`}
+>
+  📚 Reservar livro
+</button>
           </div>
         </div>
       </div>
