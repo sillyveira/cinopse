@@ -234,7 +234,16 @@ export default function NovoLivro(){
                         }}
                         >
                             <option disabled >Categoria</option>
-                            <option value="teste">Teste</option>
+                            <option value="686fb86f96e939526ac6332d">Acadêmico</option>
+                            <option value="686fb86f96e939526ac6332a">Aventura</option>
+                            <option value="686fb86f96e939526ac63326">Ação</option>
+                            <option value="686fb86f96e939526ac63324">Comédia</option>
+                            <option value="686fb86f96e939526ac63329">Drama</option>
+                            <option value="686fb86f96e939526ac63328">Ficção</option>
+                            <option value="686fb86f96e939526ac6332b">Mistério</option>
+                            <option value="686fb86f96e939526ac63325">Romance</option>
+                            <option value="686fb86f96e939526ac63327">Terror</option>
+                            <option value="686fb86f96e939526ac6332c">Técnico</option>
                         </select>
                         {error['categoria'] && (<p className="text-red-500">{error['categoria']}</p>)}
                     </div>
