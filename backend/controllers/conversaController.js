@@ -5,16 +5,17 @@ const User = require("../models/user");
 const conversaController = {
   iniciarConversa: async (req, res) => {
     try {
-      const { userId1, userId2 } = req.body;
+      const usuarioId = req.user.id;
+      const { outroUsuarioId } = req.body;
 
-      if (!userId1 || !userId2) {
+      if (!usuarioId || !outroUsuarioId) {
         return res
           .status(400)
           .json({ error: "IDs dos usuários são obrigatórios" });
       }
 
       // Ordenar IDs para evitar duplicatas
-      const usuariosOrdenados = [userId1, userId2].sort();
+      const usuariosOrdenados = [usuarioId, outroUsuarioId].sort();
 
       // Verificar se conversa já existe
       let conversa = await Conversa.findOne({
@@ -29,7 +30,26 @@ const conversaController = {
         await conversa.save();
       }
 
-      res.status(200).json(conversa);
+      // Buscar informações do outro usuário
+      const usuarioConversaId = usuariosOrdenados.find((id) => id !== usuarioId);
+      const usuarioConversa = await User.findById(usuarioConversaId).select(
+        "_id nome email foto"
+      );
+
+      // Retornar no mesmo formato que getConversasUsuario para consistência no frontend
+      const conversaFormatada = {
+        _id: conversa._id,
+        criadoEm: conversa.criadoEm,
+        ultimaMensagem: conversa.ultimaMensagem,
+        outroUsuario: {
+          _id: usuarioConversa._id,
+          nome: usuarioConversa.nome,
+          email: usuarioConversa.email,
+          foto: usuarioConversa.foto,
+        },
+      };
+
+      res.status(200).json(conversaFormatada);
     } catch (error) {
       console.error("Erro ao criar/obter conversa:", error);
       res.status(500).json({

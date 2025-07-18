@@ -3,6 +3,8 @@ import { Send, X } from "lucide-react";
 import { useAuth } from "../context/Auth";
 import io from "socket.io-client";
 import Modal from "../componentes/Modal";
+import { useLocation } from "react-router-dom";
+
 // TODO: Implementar a página de chat com as seguintes funcionalidades:
 
 // - Exibir mensagens de uma conversa selecionada
@@ -73,7 +75,7 @@ export default function Chat() {
   useEffect(() => {
     if (user) {
       const newSocket = io("http://localhost:3000", {
-        query: { ùserId: user.id },
+        query: { userId: user.id },
       });
 
       newSocket.on("connect", () => {
@@ -96,6 +98,15 @@ export default function Chat() {
       };
     }
   }, [user]);
+
+  // useEffect para selecionar a conversa automaticamente se houver estado na navegação
+  const location = useLocation();
+  useEffect(() => {
+  if (location.state?.autoSelect && location.state?.conversa){
+    selecionarConversa(location.state.conversa);
+  }
+  }, [socket]);	
+
   // Função para selecionar uma conversa e exibir as mensagens
   const selecionarConversa = async (conversa) => {
     setUsuarioConversa({
@@ -171,9 +182,6 @@ export default function Chat() {
         }
         const data = await response.json();
         setConversas(data);
-        console.log("Conversas:", data);
-        console.log("------------");
-        console.log("Conversas:", conversas);
       } catch (error) {
         console.error("Erro ao buscar conversas:", error);
       }
@@ -188,11 +196,11 @@ export default function Chat() {
         {/* Conversas */}
         <div className="flex flex-col h-full w-80 border-r border-gray-200">
           <div className="p-4 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-center mb-3">
+            <h1 className="text-xl font-bold text-center ">
               Conversas Recentes
             </h1>
 
-            <button
+            {/* <button
               className="w-full cursor-pointer bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 active:bg-red-800 transition-colors shadow-md"
               onClick={() => setModalAberto(true)}
             >
@@ -200,10 +208,10 @@ export default function Chat() {
                 <Send size={20} className="text-white" />
                 <span className="font-medium">Nova Conversa</span>
               </div>
-            </button>
+            </button> */}
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto font-">
             {conversas.length === 0 ? (
               <div className="text-gray-500 text-center p-4">
                 Nenhuma conversa encontrada.
@@ -280,7 +288,7 @@ export default function Chat() {
       </div>
 
       {/* Modal para iniciar nova conversa */}
-      <Modal
+      {/* <Modal
         isOpen={modalAberto}
         onClose={() => setModalAberto(false)}
         title="Modal para Nova Conversa"
@@ -292,7 +300,7 @@ export default function Chat() {
         >
           Aceitar
         </button>
-      </Modal>
+      </Modal> */}
     </>
   );
 }

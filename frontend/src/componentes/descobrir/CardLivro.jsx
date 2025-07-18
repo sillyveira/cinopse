@@ -7,12 +7,12 @@ const CardLivro = ({ book }) => {
   const navigate = useNavigate();
   return (
     <div
-    onClick={() => navigate(`/livros/${book.id}`)}
+    onClick={() => navigate(`/livros/${book._id}`)}
     className="cursor-pointer bg-white rounded-lg md:rounded-xl shadow-lg p-2 md:p-4 mx-1 md:mx-2 min-w-0 flex-shrink-0 hover:shadow-xl transition-shadow duration-300 h-80 md:h-96 flex flex-col">
       <div className=" bg-gray-200 rounded-md md:rounded-lg mb-2 md:mb-4">
         <img 
-          src={book.image || '/placeholder-book.jpg'} 
-          alt={book.title}
+          src={book.fotos[0] || '/placeholder-book.jpg'} 
+          alt={book.titulo}
           className="w-full h-56 md:h-64 rounded-md md:rounded-lg overflow-hidden flex-shrink-0"
         />
       </div>
@@ -24,23 +24,23 @@ const CardLivro = ({ book }) => {
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical'
               }}>
-            {book.title}
+            {book.titulo}
           </h3>
-          <p className="text-gray-600 text-xs truncate">{book.author}</p>
+          <p className="text-gray-600 text-xs truncate">{book.autor}</p>
         </div>
         
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className="text-red-600 font-bold text-xs md:text-sm">R$ {book.price}</span>
+            <span className="text-red-600 font-bold text-xs md:text-sm">R$ {book.preco}</span>
             <span className="text-xs text-gray-500 max-w-20 truncate">{book.condition}</span>
           </div>
           
-          {/* Seller info */}
+          {/* Informação do vendedor */}
           <div className="flex justify-between items-center pt-1 border-t border-gray-100">
-            <span className="text-xs text-gray-600 truncate max-w-[60%]">{book.seller}</span>
+            <span className="text-xs text-gray-600 truncate max-w-[60%]">{book.vendedor.nome}</span>
             <div className="flex items-center space-x-1">
               <Star className="w-3 h-3 text-yellow-500 fill-current" />
-              <span className="text-xs text-yellow-600 font-medium">{book.rating}</span>
+              <span className="text-xs text-yellow-600 font-medium">{'4.5'}</span>
             </div>
           </div>
         </div>
