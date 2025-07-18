@@ -2,6 +2,7 @@ const User = require('../models/user');
 const mongoose = require('mongoose');
 const { calcularMedia, buscarUltimas } = require('./avaliacaoController');
 const Salvos = require('../models/salvos');
+const Livro = require('../models/livro')
 
 const userController = {
   // Buscar usuários por nome
@@ -151,6 +152,30 @@ const userController = {
         message: error.message 
       });
     }
+  },
+
+  meusAnuncios: async (req, res) => {
+    try {
+      const usuario = req.user.id;
+
+      if (!usuario) {
+        return res.status(400).json({message: 'ID inválido ou inexistente'})
+      }
+
+      const livrosCadastrados = await Livro.find({vendedor: usuario}).populate("categoria", "nome emoji")
+        .populate("vendedor", "nome foto")
+        .sort({ dataPublicacao: -1 });
+
+      if(!livrosCadastrados) {
+        return res.status(404).json({message: 'Nenhum anúncio encontrado'})
+      }
+
+      return res.status(200).json(livrosCadastrados)
+    
+  } catch(error) {
+    console.error(error)
+    return res.status(500).json({message: error.message})
+  }
   }
 };
 

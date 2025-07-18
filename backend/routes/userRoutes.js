@@ -14,6 +14,9 @@ router.get('/perfil/:id', userController.getUserById);
 
 router.get('/meus-salvos', authMiddleware, userController.meusSalvos);
 
+router.get('/meus-anuncios', authMiddleware, userController.meusAnuncios);
+
 router.post('/salvar-livro', authMiddleware ,userController.salvarLivro);
+
 
 module.exports = router;
