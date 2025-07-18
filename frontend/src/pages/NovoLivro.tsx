@@ -2,6 +2,7 @@ import CardImagem from "../componentes/cardImagem"
 import { Plus, UploadCloud, Trash2Icon } from "lucide-react"
 import { useState } from "react"
 import ReactDOM from 'react-dom'
+import { useAuth } from "../context/Auth"
 
 const FileInput = ({ index, file, onChange, IconComponent }) => (
   <div className="flex mb-4 gap-3">
@@ -39,13 +40,14 @@ function convertFileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result); // retorna base64
+        reader.onload = () => resolve(reader.result);
         reader.onerror = error => reject(error);
     });
 }
 
 async function convertFilesToBase64(filesArray) {
-    const base64Array = await Promise.all(filesArray.map(file => convertFileToBase64(file)));
+    const validFiles = filesArray.filter(file => file instanceof File);
+    const base64Array = await Promise.all(validFiles.map(file => convertFileToBase64(file)));
     return base64Array;
 }
 
@@ -83,6 +85,8 @@ export default function NovoLivro(){
     const [fotos, setFotos] = useState(Array(5).fill(null))
     const [error,setError] = useState({})
     const [isOpen, setIsOpen] = useState(false)
+
+    const {user} = useAuth()
 
     const handleImageChange = (index, file) => {
     const newImages = [...fotos];
@@ -153,7 +157,8 @@ export default function NovoLivro(){
             },
             body: JSON.stringify({
                 ...form,
-                fotos: imagensConvertidas
+                fotos: imagensConvertidas,
+                vendedor: user.id
             }),
             credentials: 'include'
         })
