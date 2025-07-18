@@ -15,6 +15,12 @@ async function compressPhoto(file){
     return await imageCompression.getDataUrlFromFile(compressedImage);
 }
 
+async function removeNulls(array) {
+    const newArray = await array.filter(elem => elem != null)
+
+    return newArray
+}
+
 const FileInput = ({ index, file, onChange, IconComponent }) => (
   <div className="flex mb-4 gap-3">
     <input
@@ -143,9 +149,9 @@ export default function NovoLivro(){
             return
         }
 
-
+        const removerNulls = await removeNulls(fotos)
         const imagensConvertidas = await Promise.all(
-            fotos.map(foto => foto instanceof File ? compressPhoto(foto) : null )
+            removerNulls.map(foto => foto instanceof File ? compressPhoto(foto) : null )
         );
 
         if(!imagensConvertidas) {
