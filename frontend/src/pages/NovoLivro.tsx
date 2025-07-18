@@ -138,18 +138,19 @@ export default function NovoLivro(){
             ([n,v]) => validate(n,v) 
         )
 
-        if(!fotos) {
-            setError(err => ({...err, ['fotos']: 'Anexe pelo menos uma imagem.'}))
-            console.log('É necessário que você anexe ao menos uma imagem no anúncio!')
-            return
-        }
-
+        
         if(!validando) {
             console.log('Corrija os erros')
             return
         }
-
+        
         const removerNulls = await removeNulls(fotos)
+
+        if(!removerNulls) {
+            setError(err => ({...err, ['fotos']: 'Anexe pelo menos uma imagem.'}))
+            return
+        }
+
         const imagensConvertidas = await Promise.all(
             removerNulls.map(foto => foto instanceof File ? compressPhoto(foto) : null )
         );
@@ -218,7 +219,7 @@ export default function NovoLivro(){
                             validate(e.target.name, e.target.value)
                         }}
                         >
-                            <option selected disabled >Condição do livro</option>
+                            <option disabled selected >Condição do livro</option>
                             <option value="Novo">Novo</option>
                             <option value="Seminovo">Seminovo</option>
                             <option value="Usado">Usado</option>
@@ -248,7 +249,7 @@ export default function NovoLivro(){
                             validate(e.target.name, e.target.value)
                         }}
                         >
-                            <option selected disabled >Categoria</option>
+                            <option disabled selected >Categoria</option>
                             <option value="686fb86f96e939526ac6332d">Acadêmico</option>
                             <option value="686fb86f96e939526ac6332a">Aventura</option>
                             <option value="686fb86f96e939526ac63326">Ação</option>
