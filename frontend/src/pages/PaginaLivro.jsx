@@ -214,7 +214,7 @@ export default function PaginaLivroEstilizada() {
         {/* Coluna imagens */}
         <div className="w-full flex flex-col items-start">
           <div
-            className="w-full max-w-[480px] aspect-[3/4] bg-white border-4 rounded-xl overflow-hidden flex items-center justify-center"
+            className="w-full max-w-[400px] aspect-[3/4] bg-white border-4 rounded-xl overflow-hidden flex items-center justify-center"
             style={{ borderColor: COLOR_PRIMARY_BORDER }}
           >
             {mainImg ? (
@@ -346,7 +346,7 @@ export default function PaginaLivroEstilizada() {
             <button
               type="button"
               onClick={() => reservarLivro(livro._id)}
-              className="flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-100 text-rose-800 font-medium hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
+              className="active flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-100 text-rose-800 font-medium hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
             >
               📚 Reservar livro
             </button>

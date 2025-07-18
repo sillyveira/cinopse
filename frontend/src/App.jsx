@@ -22,7 +22,7 @@ function AppContent() {
   const chatAberto = location.pathname === '/chat'; // Verifica se está no chat, se sim, não exibe o botão de mensagem
 
   return (
-    <div className='min-h-screen flex flex-col'>
+    <div className='h-screen flex flex-col'>
       <Header />
       <div className='flex-1 overflow-auto'> {/* permitir rolagem */}
         <Routes>
