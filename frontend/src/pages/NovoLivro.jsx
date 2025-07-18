@@ -4,6 +4,7 @@ import { useState } from "react"
 import ReactDOM from 'react-dom'
 import { useAuth } from "../context/Auth"
 import imageCompression from 'browser-image-compression'
+import { Navigate, useNavigate } from "react-router-dom"
 
 async function compressPhoto(file){
     const compressedImage = await imageCompression(file, {
@@ -129,7 +130,7 @@ export default function NovoLivro(){
         return !msg;
             
     }
-
+    const navigate = useNavigate();
     const submitData = async (e) => {
 
         e.preventDefault()
@@ -173,6 +174,10 @@ export default function NovoLivro(){
             }),
             credentials: 'include'
         })
+
+        if (response.status == 201){
+            navigate('/vendedor/meus-anuncios')
+        } 
 
         console.log('Dados recolhidos:', form, fotos)
     }

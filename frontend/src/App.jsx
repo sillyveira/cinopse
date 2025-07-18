@@ -45,7 +45,7 @@ function AppContent() {
           <Route path="/chat" element={<Chat/>}/>
           <Route path="/perfil/:id_usuario" element={<Perfil/>}></Route>
           <Route path="/livros/:idLivro" element={<PaginaLivro/>}></Route>
-          <Route path='/novoLivro' element={<NovoLivro/>}></Route>
+          <Route path='/vendedor/cadastrar-livro' element={<NovoLivro/>}></Route>
           <Route path="/descobrir" element={<Descobrir />} />
           <Route path="/chat" element={
             <RotaPrivada>
@@ -59,7 +59,7 @@ function AppContent() {
             </RotaPrivada>
           } />
           <Route path="/livros/:idLivro" element={<PaginaLivro />} />
-          <Route path='/perfil/meus-anuncios' element={
+          <Route path='/vendedor/meus-anuncios' element={
             <RotaPrivada>
               <MeusAnuncios/>
             </RotaPrivada>

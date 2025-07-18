@@ -107,6 +107,20 @@ function Header() {
                         >
                           <span>Meu perfil</span>
                         </a>
+                        <a
+                          href={`/vendedor/cadastrar-livro`}
+                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => setContextMenuOpen(false)}
+                        >
+                          <span>Cadastrar livro</span>
+                        </a>
+                        <a
+                          href={`/vendedor/meus-anuncios`}
+                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => setContextMenuOpen(false)}
+                        >
+                          <span>Meus anúncios</span>
+                        </a>
                         <button
                           onClick={() => {
                             logout();
