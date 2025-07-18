@@ -134,12 +134,12 @@ const userController = {
       });
 
       await novoSalvo.save();
-      return res.status(200).json({ message: 'Livro salvo com sucesso'});
+      return res.status(200).json({ message: 'Livro salvo com sucesso', saved: true });
 
       } else {
 
         await Salvos.deleteOne({ usuario: userId, livro: livroId });
-        return res.status(200).json({ message: 'Livro removido dos salvos com sucesso' });
+        return res.status(200).json({ message: 'Livro removido dos salvos com sucesso', saved: false });
 
       }
 

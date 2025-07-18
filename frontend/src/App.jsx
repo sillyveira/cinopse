@@ -24,14 +24,14 @@ function AppContent() {
   return (
     <div className='h-screen flex flex-col'>
       <Header />
-      <div className='flex-1 overflow-hidden'>
+      <div className='flex-1 overflow-auto'> {/* permitir rolagem */}
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/descobrir" element={<Descobrir/>} />
-          <Route path="/chat" element={<Chat/>}/>
-          <Route path="/perfil/:id_usuario" element={<Perfil/>}></Route>
-          <Route path='/perfil/meus-salvos' element= {<MeusSalvos/>}></Route>
-          <Route path="/livros/:idLivro" element={<PaginaLivro/>}></Route>
+          <Route path="/descobrir" element={<Descobrir />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/perfil/:id_usuario" element={<Perfil />} />
+          <Route path="/perfil/meus-salvos" element={<MeusSalvos />} />
+          <Route path="/livros/:idLivro" element={<PaginaLivro />} />
         </Routes>
       </div>
       {!chatAberto && <BotaoMensagem />}
@@ -48,7 +48,7 @@ function App() {
         </Router>
       </DataProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;
