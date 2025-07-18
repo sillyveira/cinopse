@@ -3,6 +3,17 @@ import { Plus, UploadCloud, Trash2Icon } from "lucide-react"
 import { useState } from "react"
 import ReactDOM from 'react-dom'
 import { useAuth } from "../context/Auth"
+import imageCompression from 'browser-image-compression'
+
+async function compressPhoto(file){
+    const compressedImage = await imageCompression(file, {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true
+    })
+
+    return await imageCompression.getDataUrlFromFile(compressedImage);
+}
 
 const FileInput = ({ index, file, onChange, IconComponent }) => (
   <div className="flex mb-4 gap-3">
@@ -35,21 +46,6 @@ const FileInput = ({ index, file, onChange, IconComponent }) => (
       }} color="black" className="self-center cursor-pointer"/>}
   </div>
 );
-
-function convertFileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
-    });
-}
-
-async function convertFilesToBase64(filesArray) {
-    const validFiles = filesArray.filter(file => file instanceof File);
-    const base64Array = await Promise.all(validFiles.map(file => convertFileToBase64(file)));
-    return base64Array;
-}
 
 const Modal = ({ isOpen, onClose, images, onImageChange }) => {
   if (!isOpen) return null;
@@ -100,11 +96,11 @@ export default function NovoLivro(){
 
         let msg = '';
         if ((name === 'titulo' || name === 'autor' || name === 'editora')
-            && value.length > 25
+            && value.length > 50
         ) {
         msg = `${name === 'titulo' ? 'Título' :
                 name === 'autor' ? 'Nome do autor' : 'Editora'
-                } deve ter no máximo 25 caracteres.`;
+                } deve ter no máximo 50 caracteres.`;
         }
 
         if((name === 'titulo' || name === 'autor' || name === 'editora') && value === '' || value === null) {
@@ -148,7 +144,15 @@ export default function NovoLivro(){
         }
 
 
-        const imagensConvertidas = await convertFilesToBase64(fotos)
+        const imagensConvertidas = await Promise.all(
+            fotos.map(foto => foto instanceof File ? compressPhoto(foto) : null )
+        );
+
+        if(!imagensConvertidas) {
+            console.log('Erro durante a conversão de imagem')
+            return
+        }
+
 
         const response = await fetch('http://localhost:3000/livros', {
             method: 'POST',
@@ -208,7 +212,7 @@ export default function NovoLivro(){
                             validate(e.target.name, e.target.value)
                         }}
                         >
-                            <option disabled >Condição do livro</option>
+                            <option selected disabled >Condição do livro</option>
                             <option value="Novo">Novo</option>
                             <option value="Seminovo">Seminovo</option>
                             <option value="Usado">Usado</option>
@@ -238,7 +242,7 @@ export default function NovoLivro(){
                             validate(e.target.name, e.target.value)
                         }}
                         >
-                            <option disabled >Categoria</option>
+                            <option selected disabled >Categoria</option>
                             <option value="686fb86f96e939526ac6332d">Acadêmico</option>
                             <option value="686fb86f96e939526ac6332a">Aventura</option>
                             <option value="686fb86f96e939526ac63326">Ação</option>
