@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 
 const livroSchema = new mongoose.Schema({
+  reservador: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  disponibilidade: {
+    type: Boolean,
+    default: true
+  },
   titulo: {
     type: String,
     required: true,
