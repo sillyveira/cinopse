@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
@@ -46,10 +47,18 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     // Limpar cookie no backend
-    fetch('http://localhost:3000/auth/logout', {
+    try {
+      fetch('http://localhost:3000/auth/logout', {
       method: 'POST',
       credentials: 'include',
     });
+    } catch (error) {
+      toast.error('Erro ao deslogar. Tente novamente.');
+    } finally {
+      toast.success('Você foi deslogado com sucesso!');
+    }
+    
+
   };
 
   const value = {
