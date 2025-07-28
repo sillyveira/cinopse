@@ -16,6 +16,7 @@ const livroRoutes = require('./routes/livroRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conversaRoutes = require('./routes/conversaRoutes');
 const mensagemRoutes = require('./routes/mensagemRoutes');
+const reservaRoutes = require('./routes/reservaRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -32,8 +33,7 @@ app.use(cors({
   credentials: true // para conseguir enviar cookies
 }));
 app.use(cookieParser());
-app.use(express.json({limit: '10mb'}));
-app.use(express.urlencoded({limit: '10mb', extended: true}))
+app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('Servidor rodando!');
@@ -49,6 +49,8 @@ app.use('/livros', livroRoutes);
 app.use('/usuarios', userRoutes);
 app.use('/conversas', conversaRoutes);
 app.use('/mensagens', mensagemRoutes);
+app.use('/r', reservaRoutes )
+
 
 // iniciar Websocket.
 socketHandler(io);
