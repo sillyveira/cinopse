@@ -109,6 +109,8 @@ const Pesquisar = () => {
   //   });
   // }, [livros, precoMin, precoMax, condicao, generos]);
 
+  const livros ()
+
   const toggleGenero = (nome) => {
     setGeneros((prev) => ({ ...prev, [nome]: !prev[nome] }));
   };
