@@ -15,13 +15,6 @@ import Home from './pages/Home'
 import Descobrir from './pages/Descobrir'
 import Perfil from './pages/Perfil'
 import PaginaLivro from './pages/PaginaLivro'
-<<<<<<< Updated upstream
-import MeusSalvos from './pages/MeusSalvos'
-
-function AppContent() {
-  const location = useLocation();
-  const chatAberto = location.pathname === '/chat'; // Verifica se está no chat, se sim, não exibe o botão de mensagem
-=======
 import NovoLivro from './pages/NovoLivro'
 import MeusAnuncios from './pages/MeusAnuncios'
 import Pesquisar from "./pages/Pesquisar"
@@ -41,11 +34,6 @@ function RotaPrivada({ children }) {
 function AppContent() {
   const location = useLocation();
   const chatAberto = location.pathname === '/chat';
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
   return (
     <div className='min-h-screen flex flex-col'>
       <Header />
@@ -57,11 +45,6 @@ function AppContent() {
           <Route path="/perfil/:id_usuario" element={<Perfil />} />
           <Route path="/perfil/meus-salvos" element={<MeusSalvos />} />
           <Route path="/livros/:idLivro" element={<PaginaLivro />} />
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
           <Route path="/livros" element={<Pesquisar />} />
           <Route path="/vendedor/cadastrar-livro" element={<NovoLivro />} />
           <Route path="/vendedor/meus-anuncios" element={
@@ -69,7 +52,6 @@ function AppContent() {
               <MeusAnuncios />
             </RotaPrivada>
           }/>
->>>>>>> Stashed changes
         </Routes>
       </div>
       {!chatAberto && <BotaoMensagem />}
