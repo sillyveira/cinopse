@@ -41,6 +41,9 @@ function RotaPrivada({ children }) {
 function AppContent() {
   const location = useLocation();
   const chatAberto = location.pathname === '/chat';
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
   return (
@@ -55,7 +58,10 @@ function AppContent() {
           <Route path="/perfil/meus-salvos" element={<MeusSalvos />} />
           <Route path="/livros/:idLivro" element={<PaginaLivro />} />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
           <Route path="/livros" element={<Pesquisar />} />
           <Route path="/vendedor/cadastrar-livro" element={<NovoLivro />} />
           <Route path="/vendedor/meus-anuncios" element={
