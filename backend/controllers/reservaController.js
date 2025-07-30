@@ -44,7 +44,10 @@ exports.criarReserva = async (req, res) => {
         await session.commitTransaction()
         session.endSession()
         
-        return res.status(201).json(nova_reserva) // retornando nova reserva
+        return res.status(201).json({
+            id: nova_reserva._id,
+            reserva: nova_reserva
+        }) // retornando nova reserva
 
         }catch(erro){
             console.error(erro)
