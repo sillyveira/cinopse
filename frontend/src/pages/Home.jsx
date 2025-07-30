@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // Add search functionality here
-    console.log("Searching for:", searchQuery);
+    if (searchQuery.trim()) {
+      navigate(`/pesquisar?busca=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   return (
