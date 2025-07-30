@@ -1,24 +1,43 @@
 const mongoose = require('mongoose')
 
-const venda_schema = new mongoose.Schema({
-    compradorID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
-    VendedorID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true}, 
-    LivroId: { type: mongoose.Schema.Types.ObjectId, ref: 'Livro', required: true},
-    dataexpira: { type: Date },
-    datapagamento: { type: Date}, 
-    datareserva: {
-        type: Date,
-        default: Date.now
+const vendaSchema = new mongoose.Schema({
+    compradorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    vendedorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    livroId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Livro',
+        required: true
+    },
+    reservaId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Reserva',
+        required: true
+    },
+    dataConfirmacao: {
+        type: Date
     },
     status: {
         type: String,
-        enum: ['reservado', 'confirmado', 'expirado', 'cancelado'],
-        default: 'reservado'
+        enum: ['espera', 'confirmado'],
+        default: 'espera'
     },
-    Avaliacao: {
+    avaliacao: {
         nota: Number,
-        comentario: string,
-    } 
-}) 
+        comentario: String
+    }
+}, {
+    timestamps: true // Adiciona createdAt e updatedAt
+})
 
-module.exports = mongoose.model('Venda', venda_schema)
+vendaSchema.index({ compradorId: 1 })
+vendaSchema.index({ livroId: 1 })
+
+module.exports = mongoose.model('Venda', vendaSchema)
