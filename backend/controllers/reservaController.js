@@ -2,7 +2,6 @@ const Livro = require('../models/livro')
 const Reserva = require('../models/reserva')
 const mongoose = require('mongoose')
 
-
 async function criar_nova_reserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
@@ -46,8 +45,7 @@ exports.criarReserva = async (req, res) => {
         
         return res.status(201).json({
             id: nova_reserva._id,
-            reserva: nova_reserva
-        }) // retornando nova reserva
+        }) // retornando id da nova reserva
 
         }catch(erro){
             console.error(erro)
@@ -93,7 +91,7 @@ exports.cancelar_reserva = async (req,res) => {
 
         await Promise.all([
             livro.save({session}),
-            reserva.save({session})
+            Reserva.findByIdAndDelete(reserva._id, { session })
         ])
         
         await session.commitTransaction()
@@ -128,7 +126,6 @@ exports.cancelar_reserva = async (req,res) => {
             return res.status(400).json({ erro: erro.message });
         }
 
-       
         return res.status(500).json({ erro: 'Falha ao cancelar a reserva'})
     }
 }
