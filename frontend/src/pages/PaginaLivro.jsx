@@ -348,7 +348,7 @@ export default function PaginaLivroEstilizada() {
               <Atributo
                 icon="📄"
                 label="Nº páginas"
-                value={livro.numPaginas ?? "--"}
+                value={livro.nPaginas ?? "--"}
               />
               <Atributo icon="🗣️" label="Idioma" value={livro.idioma || "--"} />
               <Atributo

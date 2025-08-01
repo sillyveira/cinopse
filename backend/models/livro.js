@@ -64,6 +64,16 @@ const livroSchema = new mongoose.Schema({
   dataPublicacao: {
     type: Date,
     default: Date.now
+  },
+  nPaginas: {
+    type: Number,
+    default: null
+  },
+  idioma: {
+    type: String,
+    trim: true,
+    maxlength: 1000,
+    default: null
   }
 }, {
   timestamps: true,

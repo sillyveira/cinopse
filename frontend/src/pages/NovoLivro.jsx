@@ -84,10 +84,11 @@ const Modal = ({ isOpen, onClose, images, onImageChange }) => {
 };
 
 export default function NovoLivro(){
-    const [form, setForm] = useState({titulo: '', autor: '', condicao: '', preco: '', categoria: '', anoPublicacao: '', descricao: '',editora: ''})
+    const [form, setForm] = useState({titulo: '', autor: '', condicao: '', preco: '', categoria: '', anoPublicacao: '', descricao: '',editora: '', nPaginas: '', idioma: ''})
     const [fotos, setFotos] = useState(Array(5).fill(null))
     const [error,setError] = useState({})
     const [isOpen, setIsOpen] = useState(false)
+    const [isDisa, setIsDisa] = useState(false)
 
     const {user} = useAuth()
 
@@ -103,11 +104,11 @@ export default function NovoLivro(){
 
         let msg = '';
         if ((name === 'titulo' || name === 'autor' || name === 'editora')
-            && value.length > 50
+            && value.length > 100
         ) {
         msg = `${name === 'titulo' ? 'Título' :
                 name === 'autor' ? 'Nome do autor' : 'Editora'
-                } deve ter no máximo 50 caracteres.`;
+                } deve ter no máximo 100 caracteres.`;
         }
 
         if((name === 'titulo' || name === 'autor' || name === 'editora') && value === '' || value === null) {
@@ -118,11 +119,11 @@ export default function NovoLivro(){
         if (name === 'preco') {
         const num = Number(value);
         if (value === '') {
-            msg = 'Preço obrigatório.';
+            msg = `${name} obrigatório.`;
         } else if (Number.isNaN(num)) {
-            msg = 'Preço deve ser número.';
+            msg = `${name} deve ser número.`;
         } else if (num < 0) {
-            msg = 'Preço não pode ser negativo.';
+            msg = `${name} não pode ser negativo.`;
         }
         }
         setError(err => ({ ...err, [name]: msg }));
@@ -132,7 +133,8 @@ export default function NovoLivro(){
     }
     const navigate = useNavigate();
     const submitData = async (e) => {
-
+        
+        setIsDisa(true)
         e.preventDefault()
 
         const validando = Object.entries(form).every(
@@ -141,6 +143,7 @@ export default function NovoLivro(){
 
         
         if(!validando) {
+            setIsDisa(false)
             console.log('Corrija os erros')
             return
         }
@@ -148,6 +151,7 @@ export default function NovoLivro(){
         const removerNulls = await removeNulls(fotos)
 
         if(!removerNulls) {
+            setIsDisa(false)
             setError(err => ({...err, ['fotos']: 'Anexe pelo menos uma imagem.'}))
             return
         }
@@ -157,6 +161,7 @@ export default function NovoLivro(){
         );
 
         if(!imagensConvertidas) {
+            setIsDisa(false)
             console.log('Erro durante a conversão de imagem')
             return
         }
@@ -177,7 +182,8 @@ export default function NovoLivro(){
 
         if (response.status == 201){
             navigate('/vendedor/meus-anuncios')
-        } 
+        }
+        setIsDisa(false)
 
         console.log('Dados recolhidos:', form, fotos)
     }
@@ -224,7 +230,7 @@ export default function NovoLivro(){
                             validate(e.target.name, e.target.value)
                         }}
                         >
-                            <option disabled selected >Condição do livro</option>
+                            <option value="" disabled>Condição do livro</option>
                             <option value="Novo">Novo</option>
                             <option value="Seminovo">Seminovo</option>
                             <option value="Usado">Usado</option>
@@ -254,7 +260,7 @@ export default function NovoLivro(){
                             validate(e.target.name, e.target.value)
                         }}
                         >
-                            <option disabled selected >Categoria</option>
+                            <option value="" disabled>Categoria</option>
                             <option value="686fb86f96e939526ac6332d">Acadêmico</option>
                             <option value="686fb86f96e939526ac6332a">Aventura</option>
                             <option value="686fb86f96e939526ac63326">Ação</option>
@@ -309,8 +315,9 @@ export default function NovoLivro(){
                         </div>
                         {error['fotos'] && (<p className="text-red-500">{error['fotos']}</p>)}
                     </div>
-                    <div className="w-1/2 max-lg:w-full">
-                        <strong><p>Editora</p></strong>
+                    <div className="flex flex-col w-1/2 gap-4 max-lg:w-full">
+                        <div className="flex flex-col w-full">
+                        <strong><p>Editora*</p></strong>
                         <input className="border border-[#A29797] rounded-[12px] h-12 w-full pl-4" type="text" placeholder="Digite o nome da editora..."
                         name="editora"
                         value={form.editora}
@@ -320,9 +327,76 @@ export default function NovoLivro(){
                         }}
                         />
                         {error['editora'] && (<p className="text-red-500">{error['editora']}</p>)}
+                        </div>
+                        <div className="flex gap-8 flex-row w-full">
+
+                        <div className="flex flex-col w-1/2">
+                        <strong><p>Nº de páginas</p></strong>
+                        <input type="number" className="w-full border border-[#A29797] rounded-[12px] h-12 pl-4" placeholder="Digite o número de páginas..."
+                        name="nPaginas"
+                        value={form.nPaginas}
+                        onChange={(e)=> {
+                            setForm(prev=> ({...prev, [e.target.name]: e.target.value}))
+                            validate(e.target.name, e.target.value)
+                        }}
+                        />
+                        </div>
+                        <div className="flex flex-col w-1/2">
+                            <strong><p>Idioma*</p></strong>
+                            <select
+                                className="border border-[#A29797] rounded-[12px] h-12 w-full pl-4"
+                                name="idioma"
+                                value={form.idioma}
+                                onChange={(e) => {
+                                    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+                                    validate(e.target.name, e.target.value);
+                                }}
+                                >
+                                <option value="" disabled>
+                                    Selecione um idioma
+                                </option>
+                                <option value="Português">Português</option>
+                                <option value="Inglês">Inglês</option>
+                                <option value="Espanhol">Espanhol</option>
+                                <option value="Francês">Francês</option>
+                                <option value="Alemão">Alemão</option>
+                                <option value="Italiano">Italiano</option>
+                                <option value="Chinês (Mandarim)">Chinês (Mandarim)</option>
+                                <option value="Japonês">Japonês</option>
+                                <option value="Coreano">Coreano</option>
+                                <option value="Árabe">Árabe</option>
+                                <option value="Russo">Russo</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Bengali">Bengali</option>
+                                <option value="Urdu">Urdu</option>
+                                <option value="Turco">Turco</option>
+                                <option value="Hebraico">Hebraico</option>
+                                <option value="Grego">Grego</option>
+                                <option value="Tailandês">Tailandês</option>
+                                <option value="Vietnamita">Vietnamita</option>
+                                <option value="Sueco">Sueco</option>
+                                <option value="Norueguês">Norueguês</option>
+                                <option value="Dinamarquês">Dinamarquês</option>
+                                <option value="Finlandês">Finlandês</option>
+                                <option value="Holandês">Holandês</option>
+                                <option value="Romeno">Romeno</option>
+                                <option value="Tcheco">Tcheco</option>
+                                <option value="Polonês">Polonês</option>
+                                <option value="Húngaro">Húngaro</option>
+                                <option value="Ucraniano">Ucraniano</option>
+                                <option value="Eslovaco">Eslovaco</option>
+                                <option value="Croata">Croata</option>
+                                <option value="Sérvio">Sérvio</option>
+                                <option value="Búlgaro">Búlgaro</option>
+                                <option value="Lituano">Lituano</option>
+                                <option value="Letão">Letão</option>
+                                <option value="Estoniano">Estoniano</option>
+                                </select>
+                        </div>
+                        </div>
                     </div>
                 </div>
-                <button className="flex flex-row w-full h-12 bg-[#7D474D] border border-[#7D474D] text-white rounded-[12px] p-2 items-center justify-center cursor-pointer" type="submit"><strong>Cadastrar livro</strong></button>
+                <button disabled={isDisa} className="flex flex-row w-full h-12 bg-[#7D474D] border border-[#7D474D] text-white rounded-[12px] p-2 items-center justify-center cursor-pointer" type="submit"><strong>{isDisa ? "Carregando..." : "Cadastrar Livro"}</strong></button>
             </form>
             </div>
             <Modal
