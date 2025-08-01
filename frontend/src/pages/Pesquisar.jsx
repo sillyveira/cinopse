@@ -307,25 +307,27 @@ const Pesquisar = () => {
                         {livro.titulo}
 
                         {/* Botão Salvar à direita do título */}
-                        <button
-                          type="button"
-                          disabled={salvando}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            salvarLivro(livro._id);
-                          }}
-                          className="absolute top-0 right-0 flex items-center gap-1 text-sm font-medium transition-colors disabled:opacity-50"
-                          style={{ color: COLOR_PRIMARY }}
-                        >
-                          <span>{isSalvo(livro._id) ? "Salvo" : "Salvar"}</span>
-                          <span aria-hidden="true">
-                            {isSalvo(livro._id) ? (
-                              <Bookmark color="#D4A037" fill="#D4A037" />
-                            ) : (
-                              <Bookmark />
-                            )}
-                          </span>
-                        </button>
+                        {isAuthenticated && (
+                          <button
+                            type="button"
+                            disabled={salvando}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              salvarLivro(livro._id);
+                            }}
+                            className="absolute top-0 right-0 flex items-center gap-1 text-sm font-medium transition-colors disabled:opacity-50"
+                            style={{ color: COLOR_PRIMARY }}
+                          >
+                            <span>{isSalvo(livro._id) ? "Salvo" : "Salvar"}</span>
+                            <span aria-hidden="true">
+                              {isSalvo(livro._id) ? (
+                                <Bookmark color="#D4A037" fill="#D4A037" />
+                              ) : (
+                                <Bookmark />
+                              )}
+                            </span>
+                          </button>
+                        )}
                       </h3>
 
                       <p className="text-sm">
