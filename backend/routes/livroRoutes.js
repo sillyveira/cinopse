@@ -8,9 +8,6 @@ router.get('/', livroController.getAllLivros);
 // GET /livros/:id - Buscar livro por ID
 router.get('/:id', livroController.getLivroById);
 
-// GET /livros/categoria/:categoriaId - Buscar livros por categoria
-router.get('/categoria/:categoriaId', livroController.getLivrosByCategoria);
-
 // POST /livros/:id/visualizar - Incrementar visualizações
 router.post('/:id/visualizar', livroController.incrementarVisualizacoes);
 

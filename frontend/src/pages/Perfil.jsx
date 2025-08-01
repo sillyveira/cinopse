@@ -1,17 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Star, StarHalf } from "lucide-react";
+import { useAuth } from '../context/Auth';
 
 // Página integrada com o backend para exibir o perfil de um usuário específico
 // http://urldofrontend.com/usuarios/:id_usuario
 // exemplo: http://localhost:5173/perfil/686fb86f96e939526ac63330
 
-// TODO (Adrielly): Estilizar de acordo com o prototipo e adicionar melhorias de UX.
-
 function Perfil() {
   // Extrai o parâmetro id_usuario da URL
   const { id_usuario } = useParams();
   const navigate = useNavigate();
-  
+  const { user } = useAuth();
   // Estados para armazenar dados do usuário e controle de carregamento
   const [usuario, setUsuario] = useState(null);
   const [carregando, setCarregando] = useState(true);
@@ -21,7 +21,7 @@ function Perfil() {
     async function buscarDados() {
       try {
         // Faz requisição para o backend
-        const resposta = await fetch(`http://localhost:3000/usuarios/perfil/${id_usuario}`);        // TODO (trabalho para wesley): Refatorar essa parte para services/api.js
+        const resposta = await fetch(`http://localhost:3000/usuarios/perfil/${id_usuario}`);
         const dados = await resposta.json();
         setUsuario(dados);
       } catch (erro) {
@@ -48,6 +48,21 @@ function Perfil() {
     }).format(new Date(dataStr));
   };
 
+  // Função para renderizar estrelas de avaliação
+  const renderStars = (rating) => {
+    if (!rating) return null;
+    const full = Math.floor(rating);
+    const half = rating % 1 !== 0;
+    return (
+      <div className="flex items-center text-yellow-400">
+        {Array(full)
+          .fill()
+          .map((_, i) => <Star key={i} className="w-4 h-4" />)}
+        {half && <StarHalf className="w-4 h-4" />}
+      </div>
+    );
+  };
+
   if (carregando) {
     return <div className="text-center mt-10 text-gray-500">Carregando...</div>;
   }
@@ -57,69 +72,97 @@ function Perfil() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md overflow-y-auto">
-      {/* Botão "Meus Salvos" */}
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={irParaMeusSalvos}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Meus Salvos
-        </button>
-      </div>
-
-      <div className="flex items-center space-x-6">
+    <div className="max-w-4xl mx-auto mt-10 p-5 bg-gray-50 min-h-screen">
+      {/* Cabeçalho do perfil */}
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 bg-white p-6 rounded-lg shadow-md mb-8">
         <img
-          src={usuario.foto}
-          alt={usuario.nome}
-          className="w-24 h-24 rounded-full object-cover border"
+          src={usuario.foto || "/perfilimg.jpg"}
+          className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-red-900"
+          alt="Perfil"
         />
-        <div>
-          <h1 className="text-2xl font-bold">{usuario.nome}</h1>
-          <p className="text-gray-600">{usuario.email}</p>
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{usuario.nome}</h1>
+          <p className="text-gray-600 mb-3">{usuario.email}</p>
+          <div className="flex items-center gap-3">
+            {renderStars(usuario.mediaAvaliacao?.media)}
+            <span className="text-gray-700">
+              {usuario.mediaAvaliacao?.media?.toFixed(2) || '0.00'} ({usuario.ultimasAvaliacoes?.length || 0} avaliações)
+            </span>
+          </div>
+        </div>
+        <div className="w-full md:w-auto">
+
+          { user && user.id === id_usuario ? (     
+          <button 
+            onClick={irParaMeusSalvos}
+            className="w-full md:w-auto px-6 py-3 bg-red-900 text-white rounded-lg hover:bg-red-800 transition-colors duration-300 font-medium"
+          >
+            Meus Salvos
+          </button>
+          ) : ( 
+            <></>
+          )}
+
         </div>
       </div>
 
-      <div className="mt-6 space-y-2">
-        <p><span className="font-semibold">Data de ingresso:</span> {formatarData(usuario.dataIngresso)}</p>
-        <p><span className="font-semibold">Última vez online:</span> {formatarData(usuario.ultimaVezOnline)}</p>
-        <p><span className="font-semibold">Livros comprados:</span> {usuario.quantidadeLivrosComprados}</p>
-        <p><span className="font-semibold">Livros vendidos:</span> {usuario.quantidadeLivrosVendidos}</p>
-        <p><span className="font-semibold">Média de avaliação:</span> {usuario.mediaAvaliacao?.media?.toFixed(2) || '0.00'}</p>
+      {/* Estatísticas do usuário */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white text-center p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium text-gray-700 mb-2">Livros Comprados</h3>
+          <p className="text-2xl font-bold text-gray-800">{usuario.quantidadeLivrosComprados || 0}</p>
+        </div>
+        <div className="bg-white text-center p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium text-gray-700 mb-2">Livros Vendidos</h3>
+          <p className="text-2xl font-bold text-gray-800">{usuario.quantidadeLivrosVendidos || 0}</p>
+        </div>
+        <div className="bg-white text-center p-6 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium text-gray-700 mb-2">Membro desde</h3>
+          <p className="text-2xl font-bold text-gray-800">{new Date(usuario.dataIngresso).getFullYear()}</p>
+        </div>
       </div>
 
       {/* Seção de Avaliações - só exibe se existirem avaliações */}
       {usuario.ultimasAvaliacoes && usuario.ultimasAvaliacoes.length > 0 && (
-        <div className="mt-8">
-          {/* Título da seção com contador de avaliações */}
-          <h2 className="text-xl font-bold mb-4">Últimas Avaliações ({usuario.ultimasAvaliacoes.length})</h2>
-          <div className="space-y-3">
-            {/* Mapeia cada avaliação para criar um card */}
+        <section className="mb-10">
+          <h2 className="text-xl font-bold text-gray-800 mb-6">Últimas Avaliações ({usuario.ultimasAvaliacoes.length})</h2>
+          <div className="space-y-4">
             {usuario.ultimasAvaliacoes.map((avaliacao) => (
-              <div key={avaliacao._id} className="p-3 border border-gray-200 rounded">
-                <div className="flex justify-between items-start mb-2">
-                  {/* Informações do avaliador e livro */}
+              <div key={avaliacao._id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <p className="font-medium">{avaliacao.nomeUsuario}</p>
-                    <p className="text-sm text-gray-600">Livro: {avaliacao.nomeLivro}</p>
+                    <span className="font-semibold text-gray-800">{avaliacao.nomeUsuario}</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      {renderStars(avaliacao.nota)}
+                      <span className="text-gray-700 font-medium">{avaliacao.nota}/5</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Livro: {avaliacao.nomeLivro}
+                    </p>
                   </div>
-
-                  {/* Nota e data da avaliação */}
-                  <div className="text-right">
-                    <p className="font-bold">Nota: {avaliacao.nota}/5</p>
-                    <p className="text-xs text-gray-500">{formatarData(avaliacao.createdAt)}</p>
-                  </div>
-                  
+                  <span className="text-sm text-gray-500">{formatarData(avaliacao.createdAt)}</span>
                 </div>
-                {/* Comentário da avaliação (opcional) */}
                 {avaliacao.comentario && (
-                  <p className="text-gray-700 text-sm">"{avaliacao.comentario}"</p>
+                  <p className="text-gray-700 text-sm leading-relaxed">"{avaliacao.comentario}"</p>
                 )}
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
+
+      {/* Informações adicionais */}
+      <section className="mb-10">
+        <h2 className="text-xl font-bold text-gray-800 mb-6">Informações do Perfil</h2>
+        <div className="bg-white p-6 rounded-lg shadow-sm space-y-3">
+          <p className="text-gray-700">
+            <span className="font-semibold">Data de ingresso:</span> {formatarData(usuario.dataIngresso)}
+          </p>
+          <p className="text-gray-700">
+            <span className="font-semibold">Última vez online:</span> {formatarData(usuario.ultimaVezOnline)}
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

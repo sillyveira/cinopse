@@ -5,7 +5,52 @@ const livroController = {
   // Buscar todos os livros
   getAllLivros: async (req, res) => {
     try {
-      const livros = await Livro.find()
+      // Extrair parâmetros de query da URL
+      const { precoMin, precoMax, categoria, condicao } = req.query;
+      
+      // Construir objeto de filtros dinamicamente
+      const filtros = {};
+      
+      // Filtro por preço mínimo e máximo
+      if (precoMin || precoMax) {
+        filtros.preco = {};
+        if (precoMin) {
+          const precoMinimo = parseFloat(precoMin);
+          if (isNaN(precoMinimo) || precoMinimo < 0) {
+            return res.status(400).json({ error: "Preço mínimo deve ser um número válido maior ou igual a 0" });
+          }
+          filtros.preco.$gte = precoMinimo;
+        }
+        if (precoMax) {
+          const precoMaximo = parseFloat(precoMax);
+          if (isNaN(precoMaximo) || precoMaximo < 0) {
+            return res.status(400).json({ error: "Preço máximo deve ser um número válido maior ou igual a 0" });
+          }
+          filtros.preco.$lte = precoMaximo;
+        }
+      }
+      
+      // Filtro por categoria (ID)
+      if (categoria) {
+        if (!/^[0-9a-fA-F]{24}$/.test(categoria)) {
+          return res.status(400).json({ error: "ID da categoria inválido" });
+        }
+        filtros.categoria = categoria;
+      }
+      
+      // Filtro por condição
+      if (condicao) {
+        const condicoesValidas = ['Novo', 'Seminovo', 'Usado', 'Avariado'];
+        if (!condicoesValidas.includes(condicao)) {
+          return res.status(400).json({ 
+            error: "Condição inválida", 
+            condicoesValidas: condicoesValidas 
+          });
+        }
+        filtros.condicao = condicao;
+      }
+      
+      const livros = await Livro.find(filtros)
         .populate("categoria", "nome emoji")
         .populate("vendedor", "nome foto")
         .sort({ dataPublicacao: -1 });
@@ -41,25 +86,6 @@ const livroController = {
       res.status(200).json(livro);
     } catch (error) {
       console.error("Erro ao buscar livro:", error);
-      res.status(500).json({
-        error: "Erro interno do servidor",
-        message: error.message,
-      });
-    }
-  },
-
-  // Buscar livros por categoria
-  getLivrosByCategoria: async (req, res) => {
-    try {
-      const { categoriaId } = req.params;
-      const livros = await Livro.find({ categoria: categoriaId })
-        .populate("categoria", "nome emoji")
-        .populate("vendedor", "nome foto")
-        .sort({ dataPublicacao: -1 });
-
-      res.status(200).json(livros);
-    } catch (error) {
-      console.error("Erro ao buscar livros por categoria:", error);
       res.status(500).json({
         error: "Erro interno do servidor",
         message: error.message,

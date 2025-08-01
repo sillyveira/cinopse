@@ -1,26 +1,35 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Bookmark, ArrowLeft, CircleChevronLeft, CircleChevronRight } from 'lucide-react';
+import {
+  Bookmark,
+  ArrowLeft,
+  CircleChevronLeft,
+  CircleChevronRight,
+} from "lucide-react";
+import { useAuth } from "../context/Auth";
 
 /* -------- Configurações de tema ----------- */
-const COLOR_PRIMARY = "#7D474D";       
-const COLOR_PRIMARY_HOVER = "#5c3237"; 
-const COLOR_PRIMARY_RING = "#b58a8f";  
-const COLOR_PRIMARY_BORDER = "#d8b6bb"; 
+const COLOR_PRIMARY = "#7D474D";
+const COLOR_PRIMARY_HOVER = "#5c3237";
+const COLOR_PRIMARY_RING = "#b58a8f";
+const COLOR_PRIMARY_BORDER = "#d8b6bb";
 const COLOR_PRIMARY_BG_SOFT = "#f3e2e4";
 const COLOR_PRIMARY_BG_SOFT_HOVER = "#e6d0d3";
 
-const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const BRL = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
 
 /* --------- Utils --------- */
 function maskTelefone(tel) {
   if (!tel) return "--";
   const digits = tel.replace(/\D+/g, "");
   if (digits.length === 11) {
-    return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
   if (digits.length === 10) {
-    return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
   }
   return tel; // fallback
 }
@@ -33,13 +42,16 @@ function formatPreco(v) {
 function Stars({ value = 0, max = 5 }) {
   const full = Math.round(value); // arredonda simples
   return (
-    <span aria-label={`Avaliação: ${value} de ${max}`} className="text-yellow-500 select-none">
+    <span
+      aria-label={`Avaliação: ${value} de ${max}`}
+      className="text-yellow-500 select-none"
+    >
       {Array.from({ length: max }).map((_, i) => (i < full ? "★" : "☆"))}
     </span>
   );
 }
 
-function SkeletonBox({ className="" }) {
+function SkeletonBox({ className = "" }) {
   return <div className={`animate-pulse bg-gray-200 rounded ${className}`} />;
 }
 
@@ -49,7 +61,7 @@ function LivroPageSkeleton() {
       <div>
         <SkeletonBox className="w-full aspect-[3/4]" />
         <div className="mt-4 flex gap-2 overflow-x-auto sm:flex-wrap">
-          {Array.from({length:4}).map((_,i)=>(
+          {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonBox key={i} className="w-16 h-16 flex-shrink-0" />
           ))}
         </div>
@@ -71,9 +83,13 @@ function LivroPageSkeleton() {
 function Atributo({ icon, label, value }) {
   return (
     <div className="flex flex-col items-center text-center gap-1 p-2">
-      <span className="text-2xl leading-none" aria-hidden="true">{icon}</span>
+      <span className="text-2xl leading-none" aria-hidden="true">
+        {icon}
+      </span>
       <span className="text-xs text-gray-500 leading-tight">{label}</span>
-      <span className="text-sm font-medium leading-tight text-gray-900 whitespace-nowrap">{value ?? "--"}</span>
+      <span className="text-sm font-medium leading-tight text-gray-900 whitespace-nowrap">
+        {value ?? "--"}
+      </span>
     </div>
   );
 }
@@ -82,12 +98,15 @@ export default function PaginaLivroEstilizada() {
   const { idLivro } = useParams();
   const navigate = useNavigate();
 
+  const { isAuthenticated } = useAuth();
+
   const [livro, setLivro] = useState(null);
   const [erro, setErro] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [isSalvo, setIsSalvo] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
+  const [desativado, setDesativado] = useState(false);
 
   useEffect(() => {
     let abort = false;
@@ -109,23 +128,27 @@ export default function PaginaLivroEstilizada() {
       }
     }
     fetchLivro();
-    return () => { abort = true; };
+    return () => {
+      abort = true;
+    };
   }, [idLivro]);
 
   const salvarLivro = useCallback(async (livroId) => {
     setSalvando(true);
     setErro(null);
     try {
-      const response = await fetch(`http://localhost:3000/usuarios/salvar-livro`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ livroId }),
-      });
+      const response = await fetch(
+        `http://localhost:3000/usuarios/salvar-livro`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ livroId }),
+        }
+      );
       if (!response.ok) throw new Error("Não foi possível salvar o livro.");
       const data = await response.json();
       setIsSalvo(data?.saved ?? true);
-      alert(data?.message || "Livro salvo!");
     } catch (err) {
       setErro(err.message);
     } finally {
@@ -133,32 +156,38 @@ export default function PaginaLivroEstilizada() {
     }
   }, []);
 
-  const iniciarConversaVendedor = useCallback(async (vendedorId) => {
-    try {
-      const response = await fetch(`http://localhost:3000/conversas`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ outroUsuarioId: vendedorId }),
-      });
-      if (!response.ok) throw new Error("Não foi possível iniciar a conversa.");
-      const data = await response.json();
-      navigate(`/chat`, { state: { conversa: data, autoSelect: true } });
-    } catch (err) {
-      setErro(err.message);
-    }
-  }, [navigate]);
+  const iniciarConversaVendedor = useCallback(
+    async (vendedorId) => {
+      try {
+        const response = await fetch(`http://localhost:3000/conversas`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ outroUsuarioId: vendedorId }),
+        });
+        if (!response.ok)
+          throw new Error("Não foi possível iniciar a conversa.");
+        const data = await response.json();
+        navigate(`/chat`, { state: { conversa: data, autoSelect: true } });
+      } catch (err) {
+        setErro(err.message);
+      }
+    },
+    [navigate]
+  );
 
   const reservarLivro = useCallback(async (livroId) => {
     try {
-      const response = await fetch(`http://localhost:3000/livros/${livroId}/reservar`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      });
+      const response = await fetch(
+        `http://localhost:3000/livros/${livroId}/reservar`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       if (!response.ok) throw new Error("Não foi possível reservar o livro.");
       const data = await response.json();
-      alert(data?.message || "Livro reservado! Entraremos em contato.");
     } catch (err) {
       setErro(err.message);
     }
@@ -174,12 +203,16 @@ export default function PaginaLivroEstilizada() {
   if (erro) {
     return (
       <div className="max-w-2xl mx-auto p-4 text-center">
-        <p style={{ color: COLOR_PRIMARY }} className="font-medium">Erro: {erro}</p>
+        <p style={{ color: COLOR_PRIMARY }} className="font-medium">
+          Erro: {erro}
+        </p>
         <button
           onClick={() => window.location.reload()}
           style={{ backgroundColor: COLOR_PRIMARY }}
           className="mt-4 px-4 py-2 rounded text-white hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-        >Tentar novamente</button>
+        >
+          Tentar novamente
+        </button>
       </div>
     );
   }
@@ -195,18 +228,29 @@ export default function PaginaLivroEstilizada() {
           className="flex items-center gap-1 text-sm transition-colors"
           style={{ color: COLOR_PRIMARY }}
         >
-          <span className="text-lg" aria-hidden="true"><ArrowLeft /></span>
+          <span className="text-lg" aria-hidden="true">
+            <ArrowLeft />
+          </span>
         </button>
-        <button
-          type="button"
-          disabled={salvando}
-          onClick={() => salvarLivro(livro._id)}
-          className="flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50"
-          style={{ color: COLOR_PRIMARY }}
-        >
-          <span>{isSalvo ? "Salvo" : "Salvar"}</span>
-          <span aria-hidden="true">{isSalvo ? <Bookmark color="#D4A037" fill="#D4A037"/> : <Bookmark />}</span>
-        </button>
+
+        {isAuthenticated && (
+          <button
+            type="button"
+            disabled={salvando}
+            onClick={() => salvarLivro(livro._id)}
+            className="cursor-pointer flex items-center gap-2 text-sm font-medium transition-colors disabled:opacity-50"
+            style={{ color: COLOR_PRIMARY }}
+          >
+            <span>{isSalvo ? "Salvo" : "Salvar"}</span>
+            <span aria-hidden="true">
+              {isSalvo ? (
+                <Bookmark color="#D4A037" fill="#D4A037" />
+              ) : (
+                <Bookmark />
+              )}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* GRID PRINCIPAL DESCRIÇÃO LIVRO*/}
@@ -214,7 +258,7 @@ export default function PaginaLivroEstilizada() {
         {/* Coluna imagens */}
         <div className="w-full flex flex-col items-start">
           <div
-            className="w-full max-w-[480px] aspect-[3/4] bg-white border-4 rounded-xl overflow-hidden flex items-center justify-center"
+            className="w-full max-w-[400px] aspect-[3/4] bg-white border-4 rounded-xl overflow-hidden flex items-center justify-center"
             style={{ borderColor: COLOR_PRIMARY_BORDER }}
           >
             {mainImg ? (
@@ -224,7 +268,9 @@ export default function PaginaLivroEstilizada() {
                 className="w-full h-full object-contain"
               />
             ) : (
-              <span className="text-gray-500 text-sm">Sem imagem disponível</span>
+              <span className="text-gray-500 text-sm">
+                Sem imagem disponível
+              </span>
             )}
           </div>
 
@@ -238,8 +284,17 @@ export default function PaginaLivroEstilizada() {
                     key={i}
                     type="button"
                     onClick={() => setImgIndex(i)}
-                    className={`flex-shrink-0 w-16 h-16 rounded overflow-hidden border transition-shadow ${selected ? 'ring-2' : ''}`}
-                    style={selected ? { borderColor: COLOR_PRIMARY, boxShadow: `0 0 0 2px ${COLOR_PRIMARY_RING}` } : { borderColor: '#e5e7eb' }}
+                    className={`flex-shrink-0 w-16 h-16 rounded overflow-hidden border transition-shadow ${
+                      selected ? "ring-2" : ""
+                    }`}
+                    style={
+                      selected
+                        ? {
+                            borderColor: COLOR_PRIMARY,
+                            boxShadow: `0 0 0 2px ${COLOR_PRIMARY_RING}`,
+                          }
+                        : { borderColor: "#e5e7eb" }
+                    }
                   >
                     <img
                       src={foto}
@@ -257,17 +312,31 @@ export default function PaginaLivroEstilizada() {
         <div className="w-full space-y-8">
           {/* Título + preço */}
           <header className="space-y-2">
-            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-gray-900 leading-tight break-words">{livro.titulo}</h1>
-            <p className="text-lg sm:text-xl lg:text-2xl font-semibold" style={{ color: COLOR_PRIMARY }}>{precoFmt}</p>
+            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-gray-900 leading-tight break-words">
+              {livro.titulo}
+            </h1>
+            <p
+              className="text-lg sm:text-xl lg:text-2xl font-semibold"
+              style={{ color: COLOR_PRIMARY }}
+            >
+              {precoFmt}
+            </p>
           </header>
 
           {/* Card descrição + atributos */}
           <section className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 lg:p-6 shadow-sm space-y-4">
             <div className="space-y-1">
-              <h2 className="text-lg font-semibold text-gray-900">Descrição do Livro</h2>
-              <p className="text-sm text-gray-700"><span className="font-medium">Condição:</span> {livro.condicao || "--"}</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Descrição do Livro
+              </h2>
+              <p className="text-sm text-gray-700">
+                <span className="font-medium">Condição:</span>{" "}
+                {livro.condicao || "--"}
+              </p>
               {livro.descricao ? (
-                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{livro.descricao}</p>
+                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                  {livro.descricao}
+                </p>
               ) : (
                 <p className="text-sm text-gray-400">Sem descrição.</p>
               )}
@@ -276,24 +345,47 @@ export default function PaginaLivroEstilizada() {
             {/* Atributos - grid responsiva */}
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-4">
               <Atributo icon="👤" label="Autor" value={livro.autor || "--"} />
-              <Atributo icon="📄" label="Nº páginas" value={livro.numPaginas ?? "--"} />
+              <Atributo
+                icon="📄"
+                label="Nº páginas"
+                value={livro.numPaginas ?? "--"}
+              />
               <Atributo icon="🗣️" label="Idioma" value={livro.idioma || "--"} />
-              <Atributo icon="🏢" label="Editora" value={livro.editora || "--"} />
-              <Atributo icon="🗓️" label="Ano Publicação" value={livro.anoPublicacao || "--"} />
-              <Atributo icon="🏷️" label="Categoria" value={livro?.categoria?.nome || "--"} />
+              <Atributo
+                icon="🏢"
+                label="Editora"
+                value={livro.editora || "--"}
+              />
+              <Atributo
+                icon="🗓️"
+                label="Ano Publicação"
+                value={livro.anoPublicacao || "--"}
+              />
+              <Atributo
+                icon="🏷️"
+                label="Categoria"
+                value={livro?.categoria?.nome || "--"}
+              />
             </div>
           </section>
 
           {/* Card vendedor */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 lg:p-6 shadow-sm space-y-4">
+          <section
+            onClick={() => navigate(`/perfil/${vendedor?._id}`)}
+            className="cursor-pointer rounded-2xl border border-gray-200 bg-white p-3 sm:p-4 lg:p-6 shadow-sm space-y-4 group"
+          >
             <header className="flex items-start gap-4">
               <img
-                src={vendedor?.foto || "https://via.placeholder.com/80x80?text=?"}
+                src={
+                  vendedor?.foto || "https://via.placeholder.com/80x80?text=?"
+                }
                 alt={vendedor?.nome || "Vendedor"}
                 className="w-16 h-16 rounded-full object-cover border border-gray-200"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 leading-tight truncate">{vendedor?.nome || "Vendedor"}</p>
+                <p className="font-semibold text-gray-900 leading-tight truncate">
+                  {vendedor?.nome || "Vendedor"}
+                </p>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Stars value={vendedor?.avaliacaoMedia ?? 0} />
                   <span>({vendedor?.qtdAvaliacoes ?? 0} avaliações)</span>
@@ -301,7 +393,7 @@ export default function PaginaLivroEstilizada() {
               </div>
             </header>
 
-            <ul className="space-y-1 text-sm text-gray-700">
+            {/* <ul className="space-y-1 text-sm text-gray-700">
               {vendedor?.localizacao && (
                 <li>📍 <span className="font-medium">Localização:</span> {vendedor.localizacao}</li>
               )}
@@ -331,26 +423,34 @@ export default function PaginaLivroEstilizada() {
               {vendedor?.observacaoPreco && (
                 <li>💬 {vendedor.observacaoPreco}</li>
               )}
-            </ul>
+            </ul> */}
           </section>
 
           {/* Botões de ação */}
+          {isAuthenticated && ( 
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <button
               type="button"
               onClick={() => iniciarConversaVendedor(vendedor?._id)}
-              className="flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-800 text-white font-medium hover:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
+              className="cursor-pointer flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-800 text-white font-medium hover:bg-rose-800 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
             >
               💬 Chat com Vendedor
             </button>
             <button
               type="button"
-              onClick={() => reservarLivro(livro._id)}
-              className="flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full bg-rose-100 text-rose-800 font-medium hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 transition"
+              onClick={!desativado ? () => reservarLivro(livro._id) : null}
+              disabled={true}
+              className={` flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full 
+    ${
+      desativado
+        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+        : "cursor-pointer bg-rose-100 text-rose-800 hover:bg-rose-200"
+    }
+    font-medium transition`}
             >
               📚 Reservar livro
             </button>
-          </div>
+          </div>)}
         </div>
       </div>
     </div>
