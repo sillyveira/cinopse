@@ -42,6 +42,13 @@ const CarroselCategoria = ({ categories, title }) => {
       }
     }, [maxIndex, currentIndex]);
 
+  const handleCategoryClick = (category) => {
+    // Use _id if available, otherwise fall back to id
+    const categoryId = category._id || category.id;
+    console.log('Navigating to category:', categoryId, category); // Debug log
+    navigate(`/pesquisar?categoria=${categoryId}`);
+  };
+
   return (
     <div className="w-full">
       <h2 className="text-lg md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">{title}</h2>
@@ -68,13 +75,13 @@ const CarroselCategoria = ({ categories, title }) => {
       
             {categories.map((category, index) => (
               <div 
-                key={index} 
+                key={category._id || category.id || index} 
                 className="flex-shrink-0 px-1 md:px-2"
                 style={{ width: `${100 / cardsPerView}%` }}
               >
                 <CardCategoria 
                   category={category} 
-                  onClick={() => navigate(`/livros?categoria=${category.id}`)} 
+                  onClick={() => handleCategoryClick(category)} 
                 />
               </div>
             ))}

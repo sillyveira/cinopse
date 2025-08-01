@@ -15,8 +15,8 @@ import Home from './pages/Home'
 import Descobrir from './pages/Descobrir'
 import Perfil from './pages/Perfil'
 import PaginaLivro from './pages/PaginaLivro'
-import NovoLivro from './pages/NovoLivro'
-import MeusAnuncios from './pages/MeusAnuncios'
+//  import NovoLivro from './pages/NovoLivro'
+// import MeusAnuncios from './pages/MeusAnuncios'
 import Pesquisar from "./pages/Pesquisar"
 import MeusSalvos from './pages/MeusSalvos'
 
@@ -45,13 +45,13 @@ function AppContent() {
           <Route path="/perfil/:id_usuario" element={<Perfil />} />
           <Route path="/perfil/meus-salvos" element={<MeusSalvos />} />
           <Route path="/livros/:idLivro" element={<PaginaLivro />} />
-          <Route path="/livros" element={<Pesquisar />} />
-          <Route path="/vendedor/cadastrar-livro" element={<NovoLivro />} />
+          <Route path="/pesquisar" element={<Pesquisar />} />
+          {/* <Route path="/vendedor/cadastrar-livro" element={<NovoLivro />} />
           <Route path="/vendedor/meus-anuncios" element={
             <RotaPrivada>
               <MeusAnuncios />
             </RotaPrivada>
-          }/>
+          }/> */}
         </Routes>
       </div>
       {!chatAberto && <BotaoMensagem />}

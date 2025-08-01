@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useData } from "../context/DataContext";
+import { useAuth } from "../context/Auth";
 import { Search, Bookmark, ListFilterPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Pesquisar = () => {
-  const { getLivrosPorCategoria } = useData();
-  const [searchParams] = useSearchParams();
+  const { getLivrosPorCategoria, livros: allLivros } = useData();
+  const { isAuthenticated } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const categoriaId = searchParams.get("categoria");
 
   const [livros, setLivros] = useState([]);
@@ -15,15 +17,16 @@ const Pesquisar = () => {
   const [condicao, setCondicao] = useState("");
 
   const [generos, setGeneros] = useState({
-    Romance: false,
-    Drama: false,
-    Aventura: false,
-    Matemática: false,
-    História: false,
-    "Direito civil": false,
-    Sociologia: false,
-    Comédia: false,
-    Fantasia: false,
+    "Ficção": false,
+    "Romance": false,
+    "Aventura": false,
+    "Terror": false,
+    "Técnico": false,
+    "Acadêmico": false,
+    "Mistério": false,
+    "Ação": false,
+    "Comédia": false,
+    "Drama": false
   });
 
   const [generosExpanded, setGenerosExpanded] = useState(false);
@@ -43,28 +46,74 @@ const Pesquisar = () => {
   const navigate = useNavigate();
 
   const irParaDetalhes = (livroId) => {
-  navigate(`/livros/${livroId}`);
+    navigate(`/livros/${livroId}`);
   };
 
   useEffect(() => {
     if (categoriaId) {
       const livrosCategoria = getLivrosPorCategoria(categoriaId) || [];
       setLivros(livrosCategoria);
+    } else {
+      setLivros(allLivros || []);
     }
-  }, [categoriaId, getLivrosPorCategoria]);
+  }, [categoriaId, getLivrosPorCategoria, allLivros]);
 
-  const salvarLivro = async (id) => {
-  setSalvando(true);
-  try {
-    setSalvos((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
-  } finally {
-    setSalvando(false);
-  }
-  };
+  useEffect(() => {
+    const fetchSalvos = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const response = await fetch('http://localhost:3000/usuarios/meus-salvos', {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Erro ao buscar salvos');
+        }
+        
+        const data = await response.json();
+        setSalvos(data.map(item => item.livro._id));
+        console.log(salvos, data)
+      } catch (err) {
+        console.error('Erro ao buscar salvos:', err.message);
+      }
+    };
+
+    fetchSalvos();
+  },[livros]);
+
+  const salvarLivro = useCallback(async (livroId) => {
+      setSalvando(true);
+      
+      try {
+        const response = await fetch(`http://localhost:3000/usuarios/salvar-livro`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ livroId }),
+        });
+        if (!response.ok) throw new Error("Não foi possível salvar o livro.");
+        const data = await response.json();
+        setSalvos((prev) =>
+          prev.includes(livroId) ? prev.filter((x) => x !== livroId) : [...prev, livroId]
+        );
+      } catch (err) {
+      } finally {
+        setSalvando(false);
+      }
+    }, []);
 
   const isSalvo = (id) => salvos.includes(id);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const newParams = new URLSearchParams();
+    if (termoPesquisa.trim()) {
+      newParams.set("busca", termoPesquisa.trim());
+    }
+    // Remove categoria da URL para permitir busca em todos os livros
+    setSearchParams(newParams);
+  };
 
   const livrosFiltrados = useMemo(() => {
     const generosSelecionados = Object.keys(generos).filter((g) => generos[g]);
@@ -81,33 +130,19 @@ const Pesquisar = () => {
         return false;
       }
 
-      const titulo = livro.titulo.toLowerCase();
-      const autor = livro.autor.toLowerCase();
-      if (termoBusca && !titulo.includes(termoBusca) && !autor.includes(termoBusca)) {
-        return false;
+      const termoBuscaAtual = searchParams.get("busca") || "";
+      if (termoBuscaAtual) {
+        const titulo = livro.titulo.toLowerCase();
+        const autor = livro.autor.toLowerCase();
+        const termoLower = termoBuscaAtual.toLowerCase();
+        if (!titulo.includes(termoLower) && !autor.includes(termoLower)) {
+          return false;
+        }
       }
 
       return true;
     });
-  }, [livros, precoMin, precoMax, condicao, generos, termoBusca]);
-
-
-  // const livrosFiltrados = useMemo(() => {
-  //   const generosSelecionados = Object.keys(generos).filter((g) => generos[g]);
-
-  //   return livros.filter((livro) => {
-  //     const preco = Number(livro.preco);
-  //     if (precoMin && preco < Number(precoMin)) return false;
-  //     if (precoMax && preco > Number(precoMax)) return false;
-  //     if (condicao && livro.condicao !== condicao) return false;
-  //     if (
-  //       generosSelecionados.length > 0 &&
-  //       !generosSelecionados.includes(livro.genero)
-  //     )
-  //       return false;
-  //     return true;
-  //   });
-  // }, [livros, precoMin, precoMax, condicao, generos]);
+  }, [livros, precoMin, precoMax, condicao, generos, searchParams]);
 
   const toggleGenero = (nome) => {
     setGeneros((prev) => ({ ...prev, [nome]: !prev[nome] }));
@@ -214,9 +249,11 @@ const Pesquisar = () => {
         <main className="flex-1 p-6">
           {/* Barra de pesquisa */}
           <div className="flex justify-center mb-6">
-            <div className="relative w-2/3">
+            <form onSubmit={handleSearch} className="relative w-2/3">
               <input
                 type="text"
+                value={termoPesquisa}
+                onChange={(e) => setTermoPesquisa(e.target.value)}
                 placeholder="Digite aqui o título do livro..."
                 className="w-full p-3 pl-4 pr-12 border border-[#c7a5a5] rounded-full text-sm shadow-inner"
               />
@@ -226,7 +263,7 @@ const Pesquisar = () => {
               >
                 <Search className="w-3 h-3 md:w-3 md:h-3 text-white" />
               </button>
-            </div>
+            </form>
           </div>
 
           {/* Lista de livros */}
@@ -243,17 +280,17 @@ const Pesquisar = () => {
                   className="relative border border-[#5a2c2c] rounded-lg bg-white cursor-pointer hover:shadow-md transition"
                 >
                   <div className="flex gap-4 items-center">
-                  <div className="w-20 h-28 flex items-center justify-center">
-                    <img
-                      src={livro.fotos || "/default-book.png"}
-                      alt={livro.titulo}
-                      className="max-h-full max-w-full object-contain rounded"
-                    />
-                  </div>
+                    <div className="w-20 h-28 flex items-center justify-center">
+                      <img
+                        src={livro.fotos || "/default-book.png"}
+                        alt={livro.titulo}
+                        className="max-h-full max-w-full object-contain rounded"
+                      />
+                    </div>
 
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold relative pr-16">
-                      {livro.titulo}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold relative pr-16">
+                        {livro.titulo}
 
                         {/* Botão Salvar à direita do título */}
                         <button
@@ -278,10 +315,10 @@ const Pesquisar = () => {
                       </h3>
 
                       <p className="text-sm">
-                      {livro.autor} / Ano: {livro.ano} / Condição: {livro.condicao}
-                    </p>
+                        {livro.autor} / Ano: {livro.anoPublicacao || "N/A"} / Condição: {livro.condicao}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
                   <div className="text-right pr-1 pt-1">
                     <p className="text-2xl font-bold text-[#5a2c2c]">
