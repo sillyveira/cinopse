@@ -115,6 +115,12 @@ const Pesquisar = () => {
     setSearchParams(newParams);
   };
 
+  const clearSearch = () => {
+    setTermoPesquisa("");
+    const newParams = new URLSearchParams();
+    setSearchParams(newParams);
+  };
+
   const livrosFiltrados = useMemo(() => {
     const generosSelecionados = Object.keys(generos).filter((g) => generos[g]);
 
@@ -125,7 +131,7 @@ const Pesquisar = () => {
       if (condicao && livro.condicao !== condicao) return false;
       if (
         generosSelecionados.length > 0 &&
-        !generosSelecionados.includes(livro.genero)
+        !generosSelecionados.includes(livro.categoria?.nome)
       ) {
         return false;
       }
@@ -249,21 +255,29 @@ const Pesquisar = () => {
         <main className="flex-1 p-6">
           {/* Barra de pesquisa */}
           <div className="flex justify-center mb-6">
-            <form onSubmit={handleSearch} className="relative w-2/3">
-              <input
-                type="text"
-                value={termoPesquisa}
-                onChange={(e) => setTermoPesquisa(e.target.value)}
-                placeholder="Digite aqui o título do livro..."
-                className="w-full p-3 pl-4 pr-12 border border-[#c7a5a5] rounded-full text-sm shadow-inner"
-              />
+            <div className="flex items-center gap-2 w-2/3">
+              <form onSubmit={handleSearch} className="relative flex-1">
+                <input
+                  type="text"
+                  value={termoPesquisa}
+                  onChange={(e) => setTermoPesquisa(e.target.value)}
+                  placeholder="Digite aqui o título do livro..."
+                  className="w-full p-3 pl-4 pr-12 border border-[#c7a5a5] rounded-full text-sm shadow-inner"
+                />
+                <button
+                  type="submit"
+                  className="cursor-pointer absolute right-1 md:right-2 top-1 md:top-1 bg-red-800 hover:bg-red-500 p-2 md:p-3 rounded-full transition-colors"
+                >
+                  <Search className="w-3 h-3 md:w-3 md:h-3 text-white" />
+                </button>
+              </form>
               <button
-                type="submit"
-                className="cursor-pointer absolute right-1 md:right-2 top-1 md:top-1 bg-red-800 hover:bg-red-500 p-2 md:p-3 rounded-full transition-colors"
+                onClick={clearSearch}
+                className="px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-full text-sm font-medium transition-colors"
               >
-                <Search className="w-3 h-3 md:w-3 md:h-3 text-white" />
+                Limpar
               </button>
-            </form>
+            </div>
           </div>
 
           {/* Lista de livros */}
