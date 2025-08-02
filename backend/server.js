@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('./cron/limparExpirados')
 
 const express = require('express');
 const http = require('http');
