@@ -8,7 +8,7 @@ async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
         vendedorid: vendedorId,
-        data_exp: new Date(new Date().getTime() + 2 * 60 * 1000),  
+        data_exp: new Date(new Date().getTime() + 15 * 60 * 1000),  
         statusreserva: true,                                           // vou a biblioteca chamada nodecron pra deletar a reserva após o tempo expirar
         livroid: LivroId,
     })
@@ -65,8 +65,6 @@ exports.criarReserva = async (req, res) => {
         
         // Finalizando sessão
         await session.commitTransaction()
-        session.endSession()
-        
         return res.status(201).json({
             id: nova_reserva._id,
         }) // retornando id da nova reserva
@@ -74,13 +72,15 @@ exports.criarReserva = async (req, res) => {
         }catch(erro){
             console.error(erro)
             await session.abortTransaction()
-            session.endSession()
 
             if(erro.message === 'Livro não encontrado'){ return res.status(404).json({ erro: erro.message })}
             if(erro.message === 'Livro indisponível para reserva'){return res.status(400).json({ erro: erro.message })}
             if(erro.message === 'O livro não possui vendedor válido'){ return res.status(404).json({ erro: erro.message })}
             return res.status(500).json({ erro: '[ERRO]: ao reservar Livro'})
+        } finally {
+            await session.endSession()
         }
+
 }
 
 exports.cancelarReserva = async (req,res) => {
@@ -130,7 +130,6 @@ exports.cancelarReserva = async (req,res) => {
         ])
         
         await session.commitTransaction()
-        session.endSession()
 
         return res.status(200).json({ 
             message: 'Reserva cancelada com Sucesso!',
@@ -142,7 +141,6 @@ exports.cancelarReserva = async (req,res) => {
     } catch(erro){
         console.error(erro)
         await session.abortTransaction()
-        session.endSession()
         
         // Tratamento de mensagens específicas
         if (erro.message === 'Apenas Vendedor e Reservador podem efetuar o cancelamento') {
@@ -162,5 +160,7 @@ exports.cancelarReserva = async (req,res) => {
         }
 
         return res.status(500).json({ erro: 'Falha ao cancelar a reserva'})
+    } finally {
+        await session.endSession()
     }
 }
