@@ -29,9 +29,17 @@ const vendaSchema = new mongoose.Schema({
         enum: ['espera', 'confirmado'],
         default: 'espera'
     },
+    confirmacaoComprador: {
+        type: Boolean,
+        default: false
+    },
+    confirmacaoVendedor: {
+        type: Boolean,
+        default: false
+    },
     avaliacao: {
-        nota: Number,
-        comentario: String
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true // Adiciona createdAt e updatedAt
