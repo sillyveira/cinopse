@@ -30,5 +30,6 @@ const reservaSchema = new mongoose.Schema ({
 
 reservaSchema.index({ reservadorid: 1 });
 reservaSchema.index({ livroid: 1 });
+reservaSchema.index({ data_exp: 1 }, { expireAfterSeconds: 0 }) // TTL
 
 module.exports = mongoose.model('Reserva', reservaSchema)
