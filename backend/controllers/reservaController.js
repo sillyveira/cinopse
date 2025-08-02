@@ -4,18 +4,18 @@ const Venda = require('../models/venda')
 const mongoose = require('mongoose')
 
 // Função pra criar uma nova reserva no banco de dados
-async function criar_nova_reserva({reservadorId, vendedorId, LivroId}){
+async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
         vendedorid: vendedorId,
-        data_exp: new Date(new Date().getTime() + 2 * 60 * 1000), // [PROVISÓRIO] a reserva será desfeita após um tempo, vou implementar mais adiante                                                 
+        data_exp: new Date(new Date().getTime() + 2 * 60 * 1000),  
         statusreserva: true,                                           // vou a biblioteca chamada nodecron pra deletar a reserva após o tempo expirar
         livroid: LivroId,
     })
 }
 
 // Função que cria uma venda com confirmação pendente no banco de dados
-async function criar_venda_pendente({compradorId, vendedorId, livroId, reservaId}){
+async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId}){
     return new Venda({
         compradorId: compradorId,
         vendedorId: vendedorId,
@@ -46,7 +46,7 @@ exports.criarReserva = async (req, res) => {
         
         const vendedorId = livro.vendedor
         const reservadorId = req.user.id
-        const nova_reserva = await criar_nova_reserva({reservadorId, vendedorId, LivroId})
+        const nova_reserva = await criarNovaReserva({reservadorId, vendedorId, LivroId})
 
         livro.disponibilidade = false // Livro indisponível
         
@@ -54,7 +54,7 @@ exports.criarReserva = async (req, res) => {
         await livro.save({ session });
 
         // chamando a função de criar venda pendente (aguardando confirmação)
-        const venda_pendente = await criar_venda_pendente({
+        const venda_pendente = await criarVendaPendente({
             compradorId: reservadorId,
             vendedorId: vendedorId, 
             livroId: LivroId, 
@@ -83,7 +83,7 @@ exports.criarReserva = async (req, res) => {
         }
 }
 
-exports.cancelar_reserva = async (req,res) => {
+exports.cancelarReserva = async (req,res) => {
     const session = await mongoose.startSession();
     session.startTransaction()
     try{
