@@ -1,14 +1,31 @@
 const Livro = require('../models/livro')
 const Reserva = require('../models/reserva')
+const Venda = require('../models/venda')
 const mongoose = require('mongoose')
 
+// Função pra criar uma nova reserva no banco de dados
 async function criar_nova_reserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
         vendedorid: vendedorId,
-        data_exp: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // [PROVISÓRIO] a reserva será desfeita após um tempo, vou implementar mais adiante                                                 
+        data_exp: new Date(new Date().getTime() + 2 * 60 * 1000), // [PROVISÓRIO] a reserva será desfeita após um tempo, vou implementar mais adiante                                                 
         statusreserva: true,                                           // vou a biblioteca chamada nodecron pra deletar a reserva após o tempo expirar
         livroid: LivroId,
+    })
+}
+
+// Função que cria uma venda com confirmação pendente no banco de dados
+async function criar_venda_pendente({compradorId, vendedorId, livroId, reservaId}){
+    return new Venda({
+        compradorId: compradorId,
+        vendedorId: vendedorId,
+        livroId: livroId,
+        reservaId: reservaId,
+        dataConfirmacao: Date.now(),
+        status: 'espera',
+        confirmacaoComprador: false,
+        confirmacaoVendedor: false,
+        avaliacao: 0
     })
 }
 
@@ -28,17 +45,24 @@ exports.criarReserva = async (req, res) => {
         if(!livro.disponibilidade) throw new Error('Livro indisponível para reserva')  // Verificando se o Livro ja está reservado
         
         const vendedorId = livro.vendedor
-
         const reservadorId = req.user.id
         const nova_reserva = await criar_nova_reserva({reservadorId, vendedorId, LivroId})
 
         livro.disponibilidade = false // Livro indisponível
         
-        await Promise.all([
-            nova_reserva.save({session}),
-            livro.save({session})
-        ]) 
+        await nova_reserva.save({ session });
+        await livro.save({ session });
 
+        // chamando a função de criar venda pendente (aguardando confirmação)
+        const venda_pendente = await criar_venda_pendente({
+            compradorId: reservadorId,
+            vendedorId: vendedorId, 
+            livroId: LivroId, 
+            reservaId: nova_reserva._id
+        })
+
+        await venda_pendente.save({session})
+        
         // Finalizando sessão
         await session.commitTransaction()
         session.endSession()
@@ -62,26 +86,36 @@ exports.criarReserva = async (req, res) => {
 exports.cancelar_reserva = async (req,res) => {
     const session = await mongoose.startSession();
     session.startTransaction()
-    
     try{
-        const { reservaId, livroId } = req.params
+        const { reservaId, livroId, vendaPendenteId } = req.params
       
         const userId = req.user.id
         
+        // verificando se os ids da venda pendente, reserva e livro são válidos
+        if(!mongoose.Types.ObjectId.isValid(vendaPendenteId)) return res.status(400).json({ erro: 'Id venda pendente inválido' });
         if(!mongoose.Types.ObjectId.isValid(reservaId)) return res.status(400).json({ erro: 'Id de reserva não encontrado'})
-        if(!mongoose.Types.ObjectId.isValid(livroId)) throw new Error('Id do livro não encontrado')
+        if(!mongoose.Types.ObjectId.isValid(livroId)) return res.status(400).json({ erro: 'Id do livro não encontrado' })
         
-        const [reserva, livro] = await Promise.all([
+        // Procurando ids de reserva, livro e venda pendente
+        const [reserva, livro, vendaP] = await Promise.all([
             Reserva.findById(reservaId).session(session),
-            Livro.findById(livroId).session(session)
+            Livro.findById(livroId).session(session),
+            Venda.findById(vendaPendenteId).session(session)
         ])
-
+    
+        // Verificando se eles são válidos
         if(!reserva){ return res.status(404).json({ erro: 'Id reserva inválido' })}
         if(!livro){ return res.status(404).json({ erro: 'Id livro inválido'})}
+        if(!vendaP){ return res.status(404).json({ erro: 'Id venda pendente inválido'})}
 
+        // Verificando se a reserva e o livro presentes na venda pendente são correspondentes para seguir com o cancelamento de reserva
+        if (!(new mongoose.Types.ObjectId(reservaId)).equals(vendaP.reservaId)) throw new Error('ID da reserva não corresponde a essa venda pendente')
+        if (!(new mongoose.Types.ObjectId(livroId)).equals(vendaP.livroId)) throw new Error('ID do Livro não corresponde a essa venda pendente')
+        
         const isvendedor = reserva.vendedorid.toString() === userId
         const isreservador = reserva.reservadorid.toString() === userId
         
+        // barrando cancelas de usuários que não sejam o vendedor e o reservador 
         if(!isreservador && !isvendedor) throw  new Error ('Apenas Vendedor e Reservador podem efetuar o cancelamento')
         if(!reserva.statusreserva) throw new Error ('Reserva cancelada ou expirada')
         if(reserva.livroid.toString() !== livroId) throw new Error ('Livro não correspondente a reserva')
@@ -91,7 +125,8 @@ exports.cancelar_reserva = async (req,res) => {
 
         await Promise.all([
             livro.save({session}),
-            Reserva.findByIdAndDelete(reserva._id, { session })
+            Reserva.findByIdAndDelete(reserva._id, { session }), // excluindo reserva em caso de cancelamento
+            Venda.findByIdAndDelete(vendaPendenteId, { session }) // excluindo venda pendente em caso de cancelamento da reserva
         ])
         
         await session.commitTransaction()
@@ -110,10 +145,6 @@ exports.cancelar_reserva = async (req,res) => {
         session.endSession()
         
         // Tratamento de mensagens específicas
-        if (erro.message === 'Id do livro não encontrado') {
-            return res.status(400).json({ erro: 'Id do livro não encontrado' });
-        }
-
         if (erro.message === 'Apenas Vendedor e Reservador podem efetuar o cancelamento') {
             return res.status(403).json({ erro: erro.message });
         }
@@ -124,6 +155,10 @@ exports.cancelar_reserva = async (req,res) => {
 
         if (erro.message === 'Livro não correspondente a reserva') {
             return res.status(400).json({ erro: erro.message });
+        }
+
+        if (erro.message === 'ID da reserva não corresponde a essa venda pendente') {
+            return res.status(400).json({ erro: erro.message })
         }
 
         return res.status(500).json({ erro: 'Falha ao cancelar a reserva'})
