@@ -26,7 +26,7 @@ const vendaSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['espera', 'confirmado'],
+        enum: ['espera', 'Confirmada'],
         default: 'espera'
     },
     confirmacaoComprador: {
