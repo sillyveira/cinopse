@@ -29,10 +29,6 @@ const vendaSchema = new mongoose.Schema({
         enum: ['espera', 'Confirmada'],
         default: 'espera'
     },
-    confirmacaoComprador: {
-        type: Boolean,
-        default: false
-    },
     confirmacaoVendedor: {
         type: Boolean,
         default: false
