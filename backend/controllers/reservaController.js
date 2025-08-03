@@ -8,7 +8,7 @@ async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
         vendedorid: vendedorId,
-        data_exp: new Date(new Date().getTime() + 15 * 60 * 1000),  
+        data_exp: new Date(new Date().getTime() + 40 * 60 * 1000),  
         statusreserva: true,                                           // vou a biblioteca chamada nodecron pra deletar a reserva após o tempo expirar
         livroid: LivroId,
     })
@@ -45,7 +45,7 @@ exports.criarReserva = async (req, res) => {
         if(!livro.disponibilidade) throw new Error('Livro indisponível para reserva')  // Verificando se o Livro ja está reservado
         
         const vendedorId = livro.vendedor
-        const reservadorId = req.user.id
+        const reservadorId = req.user._id
         const nova_reserva = await criarNovaReserva({reservadorId, vendedorId, LivroId})
 
         livro.disponibilidade = false // Livro indisponível
