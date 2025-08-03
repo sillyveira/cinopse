@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+// livro schema
 const livroSchema = new mongoose.Schema({
   reservador: {
     type: mongoose.Schema.Types.ObjectId,
