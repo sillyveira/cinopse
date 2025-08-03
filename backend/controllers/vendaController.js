@@ -53,9 +53,8 @@ exports.confirmarVenda = async (req, res) => {
         if(!isComprador && !isVendedor) throw new Error('Apenas comprador ou vendedor podem confirmar a venda')
 
         // Impede confirmações duplicadas
-        if ((isComprador && venda.confirmacaoComprador) || (isVendedor && venda.confirmacaoVendedor)) {
-            throw new Error('Usuário já confirmou a venda anteriormente');
-        }
+        if (isComprador && venda.confirmacaoComprador) throw new Error('O comprador já confirmou a venda anteriormente');
+        if (isVendedor && venda.confirmacaoVendedor) throw new Error('O vendedor já confirmou a venda anteriormente')
         
         // Marca a confirmação de acordo com o usuário
         if (isComprador) venda.confirmacaoComprador = true
@@ -137,6 +136,13 @@ exports.confirmarVenda = async (req, res) => {
 
         if (erro.message === 'Apenas comprador ou vendedor podem confirmar a venda') {
             return res.status(403).json({ erro: erro.message });
+        }
+        
+        if (erro.message === 'O comprador já confirmou a venda anteriormente') {
+            return res.status(400).json({ erro: erro.message });
+        }
+        if (erro.message === 'O vendedor já confirmou a venda anteriormente') {
+            return res.status(400).json({ erro: erro.message });
         }
 
         // Resposta genérica para outros erros
