@@ -47,21 +47,18 @@ exports.confirmarVenda = async (req, res) => {
         if(!reserva.statusreserva) throw new Error ('Reserva expirada ou Cancelada')
         
         // Verifica quem está tentando confirmar: comprador ou vendedor
-        const isComprador = venda.compradorId.equals(userId)
         const isVendedor = venda.vendedorId.equals(userId)
 
-        if(!isComprador && !isVendedor) throw new Error('Apenas comprador ou vendedor podem confirmar a venda')
+        if(!isVendedor) throw new Error('Apenas o vendedor pode confirmar a venda')
 
         // Impede confirmações duplicadas
-        if (isComprador && venda.confirmacaoComprador) throw new Error('O comprador já confirmou a venda anteriormente');
         if (isVendedor && venda.confirmacaoVendedor) throw new Error('O vendedor já confirmou a venda anteriormente')
         
         // Marca a confirmação de acordo com o usuário
-        if (isComprador) venda.confirmacaoComprador = true
         if (isVendedor) venda.confirmacaoVendedor = true
 
         // Se ambos confirmaram, finaliza a venda e expira a reserva
-        if (venda.confirmacaoComprador && venda.confirmacaoVendedor) {
+        if (venda.confirmacaoVendedor) {
             venda.status = 'Confirmada'
             reserva.statusreserva = false
         }
@@ -79,27 +76,13 @@ exports.confirmarVenda = async (req, res) => {
 
         // Finaliza a transação com sucesso
         await session.commitTransaction()
-        
-        // Respostas personalizadas dependendo de quem confirmou
-        if(venda.confirmacaoComprador && !venda.confirmacaoVendedor){
-            return res.status(201).json({
-                message: 'Venda confirmada somente pelo Comprador!',
-                vendaId: venda._id,
-                status: venda.status
-            })
-        } else if (!venda.confirmacaoComprador && venda.confirmacaoVendedor){
-            return res.status(201).json({
-                message: 'Venda confirmada somente pelo Vendedor!',
-                vendaId: venda._id,
-                status: venda.status
-            })
-        } else if(venda.confirmacaoComprador && venda.confirmacaoVendedor){
-            return res.status(201).json({ 
-                message: 'Venda concluída com sucesso',
-                vendaId: venda._id,
-                status: venda.status
-            })
-        }
+       
+        return res.status(201).json({ 
+            message: 'Venda concluída com sucesso',
+            vendaId: venda._id,
+            status: venda.status
+        })
+            
 
     } catch(erro){
         // Em caso de erro, desfaz a transação
@@ -134,13 +117,10 @@ exports.confirmarVenda = async (req, res) => {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'Apenas comprador ou vendedor podem confirmar a venda') {
+        if (erro.message === 'Apenas o vendedor pode confirmar a venda') {
             return res.status(403).json({ erro: erro.message });
         }
         
-        if (erro.message === 'O comprador já confirmou a venda anteriormente') {
-            return res.status(400).json({ erro: erro.message });
-        }
         if (erro.message === 'O vendedor já confirmou a venda anteriormente') {
             return res.status(400).json({ erro: erro.message });
         }
