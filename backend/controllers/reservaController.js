@@ -8,8 +8,8 @@ async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
         vendedorid: vendedorId,
-        data_exp: new Date(new Date().getTime() + 40 * 60 * 1000),  
-        statusreserva: true,                                           // vou a biblioteca chamada nodecron pra deletar a reserva após o tempo expirar
+        data_exp: new Date(new Date().getTime() + 2 * 60 * 1000),  // coloquei pra explirar em 40 min (reduza para testes)
+        statusreserva: true,                                          
         livroid: LivroId,
     })
 }
@@ -23,12 +23,12 @@ async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId})
         reservaId: reservaId,
         dataConfirmacao: Date.now(),
         status: 'espera',
-        confirmacaoComprador: false,
         confirmacaoVendedor: false,
         avaliacao: 0
     })
 }
 
+// Método de criar reserva
 exports.criarReserva = async (req, res) => {
     const session = await mongoose.startSession()
     session.startTransaction()
@@ -36,7 +36,7 @@ exports.criarReserva = async (req, res) => {
     try{
         const { LivroId } = req.params
         if(!mongoose.Types.ObjectId.isValid(LivroId)){ return res.status(400).json({ erro: 'Id do livro é inválido' })} // verificando id do livro
-        if(!req.user || !req.user.id) { return res.status(400).json({ erro: 'Usuário não autenticado' })} // verificando se o usuário está autenticado
+        if(!req.user || !req.user._id) { return res.status(400).json({ erro: 'Usuário não autenticado' })} // verificando se o usuário está autenticado
         
         const livro = await Livro.findById(LivroId).session(session)
         
@@ -161,6 +161,6 @@ exports.cancelarReserva = async (req,res) => {
 
         return res.status(500).json({ erro: 'Falha ao cancelar a reserva'})
     } finally {
-        await session.endSession()
+        await session.endSession() // finalizando sessao
     }
 }
