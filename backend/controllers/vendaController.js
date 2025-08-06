@@ -36,19 +36,18 @@ exports.confirmarVenda = async (req, res) => {
         if (!venda.reservaId.equals(ReservaId)) throw new Error('Venda não corresponde à reserva enviada')
 
         // Busca os usuários (comprador e vendedor)
-        const [comprador, vendedor] = await Promise.all([
-            User.findById(reserva.reservadorid).session(session),
+        const [vendedor] = await Promise.all([
             User.findById(reserva.vendedorid).session(session)
         ])
 
-        if(!comprador || !vendedor) throw new Error('Comprador ou vendedor inválido')
+        if(!vendedor) throw new Error('Id Vendedor inválido')
 
         // Verifica se a reserva ainda está válida
         if(!reserva.statusreserva) throw new Error ('Reserva expirada ou Cancelada')
         
-        // Verifica quem está tentando confirmar: comprador ou vendedor
+        // Verifica se quem está tentando confirmar é o vendedor
         const isVendedor = venda.vendedorId.equals(userId)
-
+        
         if(!isVendedor) throw new Error('Apenas o vendedor pode confirmar a venda')
 
         // Impede confirmações duplicadas
@@ -57,11 +56,7 @@ exports.confirmarVenda = async (req, res) => {
         // Marca a confirmação de acordo com o usuário
         if (isVendedor) venda.confirmacaoVendedor = true
 
-        // Se ambos confirmaram, finaliza a venda e expira a reserva
-        if (venda.confirmacaoVendedor) {
-            venda.status = 'Confirmada'
-            reserva.statusreserva = false
-        }
+        venda.status = 'Confirmada' // Venda confirmada
 
         // Salva as alterações na venda e na reserva
         await Promise.all([
@@ -71,7 +66,10 @@ exports.confirmarVenda = async (req, res) => {
 
         // Exclui a reserva se a venda foi concluída
         if(venda.status === 'Confirmada'){
-            await Reserva.findByIdAndDelete(ReservaId, { session })
+            await Promise.all([
+                Reserva.findByIdAndDelete(ReservaId, { session }), // deleta reserva após a confirmação
+                Livro.findByIdAndDelete(LivroId, { session }) // deleta o anúncio do livro (livro) do bd
+            ]) 
         }
 
         // Finaliza a transação com sucesso
@@ -93,35 +91,35 @@ exports.confirmarVenda = async (req, res) => {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'Id Livro inválido') {
+        else if (erro.message === 'Id Livro inválido') {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'Id Venda Pendente inválido') {
+        else if (erro.message === 'Id Venda Pendente inválido') {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'ID do livro diferente do Id livro reservado') {
+        else if (erro.message === 'ID do livro diferente do Id livro reservado') {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'Venda não corresponde à reserva enviada') {
+        else if (erro.message === 'Venda não corresponde à reserva enviada') {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'Comprador ou vendedor inválido') {
+        else if (erro.message === 'Comprador ou vendedor inválido') {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'Reserva expirada ou Cancelada') {
+        else if (erro.message === 'Reserva expirada ou Cancelada') {
             return res.status(400).json({ erro: erro.message });
         }
 
-        if (erro.message === 'Apenas o vendedor pode confirmar a venda') {
+        else if (erro.message === 'Apenas o vendedor pode confirmar a venda') {
             return res.status(403).json({ erro: erro.message });
         }
         
-        if (erro.message === 'O vendedor já confirmou a venda anteriormente') {
+        else if (erro.message === 'O vendedor já confirmou a venda anteriormente') {
             return res.status(400).json({ erro: erro.message });
         }
 
