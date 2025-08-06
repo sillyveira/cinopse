@@ -101,11 +101,12 @@ livroSchema.pre(['find', 'findOne'], function() {
       .populate('vendedor', 'nome foto');
 });
 
-// Método para incrementar visualizações
+/* // Método para incrementar visualizações
 livroSchema.methods.incrementarVisualizacoes = function() {
   this.visualizacoes += 1;
   return this.save();
 };
+ */
 
 // Método estático para buscar por categoria
 livroSchema.statics.findByCategoria = function(categoriaId) {

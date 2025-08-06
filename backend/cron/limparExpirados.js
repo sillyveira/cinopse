@@ -9,6 +9,9 @@ async function limparExpiradas() {
   try {
     const expiradas = await Reserva.find({ data_exp: { $lt: new Date() } });
 
+    console.log(`Encontradas ${expiradas.length} reservas expiradas.`);
+    console.log(expiradas);
+
     if (expiradas.length === 0) {
       console.log('Nenhuma reserva expirada encontrada.');
       await session.endSession();
@@ -20,8 +23,8 @@ async function limparExpiradas() {
       await Livro.findByIdAndUpdate(reserva.livroid, { disponibilidade: true }, { session });
 
       // Deleta vendas ligadas à reserva
-      const result = await Venda.deleteMany({ reservaId:  new mongoose.Types.ObjectId(reserva._id) }, { session });
-      console.log(`Deletadas ${result.deletedCount} vendas pendentes para reserva ${reserva._id}`);
+      const result = await Venda.deleteOne({ reservaId:  new mongoose.Types.ObjectId(reserva._id) }, { session });
+      console.log(`Deletado: ${result._id} venda pendente para a reserva ${reserva._id}`);
 
       // Deleta reserva
       await Reserva.findByIdAndDelete(reserva._id, { session });
@@ -39,8 +42,9 @@ async function limparExpiradas() {
   }
 }
 
- 
-setInterval(limparExpiradas, 2 * 60 * 1000); // 5 minutos em milissegundos
+
+
+setInterval(limparExpiradas, 20 * 1000); // 20 segundos em milissegundos
 limparExpiradas()
 
 module.exports = limparExpiradas

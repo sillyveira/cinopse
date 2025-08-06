@@ -8,7 +8,7 @@ async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
         vendedorid: vendedorId,
-        data_exp: new Date(new Date().getTime() + 40 * 60 * 1000),  
+        data_exp: new Date(new Date().getTime() + 1 * 1000),   
         statusreserva: true,                                           // vou a biblioteca chamada nodecron pra deletar a reserva após o tempo expirar
         livroid: LivroId,
     })
