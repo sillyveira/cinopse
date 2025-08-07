@@ -158,7 +158,7 @@ const Pesquisar = () => {
     <div className="min-h-screen bg-[#fdfafa] text-[#5a2c2c]">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-72 p-6 border-r border-[#5a2c2c]">
+        <aside className="w-72 p-6">
           <h2 className="text-lg font-bold mb-6 flex items-center">
             Filtragem <span className="ml-2 text-xl">
               <ListFilterPlus />
@@ -291,57 +291,64 @@ const Pesquisar = () => {
                 <div
                   key={livro._id}
                   onClick={() => irParaDetalhes(livro._id)}
-                  className="relative border border-[#5a2c2c] rounded-lg bg-white cursor-pointer hover:shadow-md transition"
+                  className="relative border border-[#5a2c2c] rounded-lg bg-white cursor-pointer hover:shadow-md transition px-4 py-3 flex items-center justify-between"
                 >
-                  <div className="flex gap-4 items-center">
-                    <div className="w-20 h-28 flex items-center justify-center">
-                      <img
-                        src={livro.fotos || "/default-book.png"}
-                        alt={livro.titulo}
-                        className="max-h-full max-w-full object-contain rounded"
-                      />
-                    </div>
-
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold relative pr-16">
-                        {livro.titulo}
-
-                        {/* Botão Salvar à direita do título */}
-                        {isAuthenticated && (
-                          <button
-                            type="button"
-                            disabled={salvando}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              salvarLivro(livro._id);
-                            }}
-                            className="absolute top-0 right-0 flex items-center gap-1 text-sm font-medium transition-colors disabled:opacity-50"
-                            style={{ color: COLOR_PRIMARY }}
-                          >
-                            <span>{isSalvo(livro._id) ? "Salvo" : "Salvar"}</span>
-                            <span aria-hidden="true">
-                              {isSalvo(livro._id) ? (
-                                <Bookmark color="#D4A037" fill="#D4A037" />
-                              ) : (
-                                <Bookmark />
-                              )}
-                            </span>
-                          </button>
-                        )}
-                      </h3>
-
-                      <p className="text-sm">
-                        {livro.autor} / Ano: {livro.anoPublicacao || "N/A"} / Condição: {livro.condicao}
-                      </p>
-                    </div>
+                  {/* Imagem */}
+                  <div className="w-16 h-24 flex-shrink-0 mr-4">
+                    <img
+                      src={livro.fotos || "/default-book.png"}
+                      alt={livro.titulo}
+                      className="w-full h-full object-cover rounded"
+                    />
                   </div>
 
-                  <div className="text-right pr-1 pt-1">
-                    <p className="text-2xl font-bold text-[#5a2c2c]">
+                  {/* Informações principais */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    <h3 className="text-md font-bold mb-1">
+                      {livro.titulo}
+                    </h3>
+                    <p className="text-sm text-gray-700">
+                      {livro.autor} / Ano: {livro.anoPublicacao || "N/A"} / Condição: {livro.condicao}
+                    </p>
+                    {livro.telefone && (
+                      <p className="text-sm text-gray-700 mt-1">
+                        {livro.telefone} / {livro.vendedor || "Vendedor Desconhecido"}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Coluna com botão salvar e preço */}
+                  <div className="flex flex-col items-end justify-between h-full ml-4 min-w-[100px]">
+                    {/* Botão salvar */}
+                    {isAuthenticated && (
+                      <button
+                        type="button"
+                        disabled={salvando}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          salvarLivro(livro._id);
+                        }}
+                        className="flex items-center gap-1 text-sm font-medium transition-colors disabled:opacity-50 mb-2"
+                        style={{ color: COLOR_PRIMARY }}
+                      >
+                        <span>{isSalvo(livro._id) ? "Salvo" : "Salvar"}</span>
+                        <span aria-hidden="true">
+                          {isSalvo(livro._id) ? (
+                            <Bookmark color="#D4A037" fill="#D4A037" />
+                          ) : (
+                            <Bookmark />
+                          )}
+                        </span>
+                      </button>
+                    )}
+
+                    {/* Preço */}
+                    <p className="text-2xl font-bold text-[#5a2c2c] whitespace-nowrap">
                       R$ {Number(livro.preco).toFixed(2).replace(".", ",")}
                     </p>
                   </div>
                 </div>
+
               ))
             )}
           </div>
