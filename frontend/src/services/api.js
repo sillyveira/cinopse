@@ -37,7 +37,7 @@ export const fetchLivrosPorCategoria = async (categoriaId) => {
   }
 };
 
-export const incrementarVisualizacoes = async (livroId) => {
+/* export const incrementarVisualizacoes = async (livroId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/livros/${livroId}/visualizar`, {
       method: 'POST',
@@ -47,4 +47,4 @@ export const incrementarVisualizacoes = async (livroId) => {
     console.error('Erro ao incrementar visualizações:', error);
     throw error;
   }
-};
+}; */
