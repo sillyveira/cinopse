@@ -8,7 +8,7 @@ async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
     return new Reserva({
         reservadorid: reservadorId,
         vendedorid: vendedorId,
-        data_exp: new Date(new Date().getTime() + 60 * 60 * 1000),  // coloquei pra explirar em 40 min (reduza para testes)
+        data_exp: new Date(new Date().getTime() + 60 * 60 * 1000),  // Prazo de 1 hora até a reserva Expirar
         statusreserva: true,                                          
         livroid: LivroId,
     })
