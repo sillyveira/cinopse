@@ -296,7 +296,7 @@ const Pesquisar = () => {
                   {/* Imagem */}
                   <div className="w-16 h-24 flex-shrink-0 mr-4">
                     <img
-                      src={livro.fotos || "/default-book.png"}
+                      src={(Array.isArray(livro.fotos) ? livro.fotos[0] : livro.fotos) || "/default-book.png"}
                       alt={livro.titulo}
                       className="w-full h-full object-cover rounded"
                     />
