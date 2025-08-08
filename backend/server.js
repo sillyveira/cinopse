@@ -19,6 +19,7 @@ const conversaRoutes = require('./routes/conversaRoutes');
 const mensagemRoutes = require('./routes/mensagemRoutes');
 const reservaRoutes = require('./routes/reservaRoutes');
 const vendaRoutes = require('./routes/vendaRoutes')
+const avaliacaoRoutes = require('./routes/avaliacaoRoutes')
 
 const app = express();
 const server = http.createServer(app);
@@ -53,6 +54,7 @@ app.use('/conversas', conversaRoutes);
 app.use('/mensagens', mensagemRoutes);
 app.use('/r', reservaRoutes )
 app.use('/cv', vendaRoutes)
+app.use('/av', avaliacaoRoutes)
 
 
 // iniciar Websocket.
