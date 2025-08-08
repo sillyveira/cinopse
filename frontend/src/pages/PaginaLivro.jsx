@@ -259,22 +259,45 @@ export default function PaginaLivroEstilizada() {
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,480px)_1fr] gap-4 sm:gap-6 lg:gap-8 items-start">
         {/* Coluna imagens */}
         <div className="w-full flex flex-col items-start">
-          <div
-            className="w-full max-w-[400px] aspect-[3/4] bg-white border-4 rounded-xl overflow-hidden flex items-center justify-center"
-            style={{ borderColor: COLOR_PRIMARY_BORDER }}
-          >
+          <div className="w-full max-w-[400px] aspect-[3/4] relative">
             {mainImg ? (
-              <img
-                src={mainImg}
-                alt={`${livro.titulo} - imagem ${imgIndex + 1}`}
-                className="w-full h-full object-contain"
-              />
+              <>
+                <img
+                  src={mainImg}
+                  alt={`${livro.titulo} - imagem ${imgIndex + 1}`}
+                  className="w-full h-full object-cover rounded-xl border-4"
+                  style={{ borderColor: COLOR_PRIMARY_BORDER }}
+                />
+
+                {/* Botão esquerda */}
+                {imgIndex > 0 && (
+                  <button
+                    onClick={() => setImgIndex((prev) => Math.max(prev - 1, 0))}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full hover:bg-white transition"
+                  >
+                    <CircleChevronLeft size={28} color={COLOR_PRIMARY} />
+                  </button>
+                )}
+
+                {/* Botão direita */}
+                {imgIndex < fotos.length - 1 && (
+                  <button
+                    onClick={() =>
+                      setImgIndex((prev) => Math.min(prev + 1, fotos.length - 1))
+                    }
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full hover:bg-white transition"
+                  >
+                    <CircleChevronRight size={28} color={COLOR_PRIMARY} />
+                  </button>
+                )}
+              </>
             ) : (
-              <span className="text-gray-500 text-sm">
-                Sem imagem disponível
-              </span>
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-xl border-4" style={{ borderColor: COLOR_PRIMARY_BORDER }}>
+                <span className="text-gray-500 text-sm">Sem imagem disponível</span>
+              </div>
             )}
           </div>
+
 
           {/* Miniaturas - scroll horizontal no mobile */}
           {fotos ? (
