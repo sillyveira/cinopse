@@ -19,6 +19,7 @@ import PaginaLivro from './pages/PaginaLivro'
 import Pesquisar from "./pages/Pesquisar"
 import NovoLivro from './pages/NovoLivro'
 import MeusAnuncios from './pages/MeusAnuncios'
+import Reservas from './pages/Reservas'
 
 import MeusSalvos from './pages/MeusSalvos'
 
@@ -49,6 +50,7 @@ function AppContent() {
           <Route path="/livros/:idLivro" element={<PaginaLivro/>}></Route>
           <Route path='/vendedor/cadastrar-livro' element={<NovoLivro/>}></Route>
           <Route path="/descobrir" element={<Descobrir />} />
+          <Route path="/reservas" element={<Reservas/>}/>
           <Route path="/chat" element={
             <RotaPrivada>
               <Chat />
