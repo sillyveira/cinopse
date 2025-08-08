@@ -39,7 +39,6 @@ const vendaSchema = new mongoose.Schema({
     },
     tituloLivro: {
         type: String, 
-        ref: 'Livro',
         required: true
     }
 }, {
