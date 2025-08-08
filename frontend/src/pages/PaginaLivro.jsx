@@ -117,8 +117,10 @@ export default function PaginaLivroEstilizada() {
         const resp = await fetch(`http://localhost:3000/livros/${idLivro}`);
         if (!resp.ok) throw new Error("Livro não encontrado.");
         const data = await resp.json();
+        const disponivel = data.disponibilidade === false
         if (!abort) {
           setLivro(data);
+          setDesativado(disponivel)
           setImgIndex(0);
         }
       } catch (err) {
@@ -179,7 +181,7 @@ export default function PaginaLivroEstilizada() {
   const reservarLivro = useCallback(async (livroId) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/livros/${livroId}/reservar`,
+        `http://localhost:3000/r/${livroId}`,
         {
           method: "POST",
           credentials: "include",
@@ -187,7 +189,7 @@ export default function PaginaLivroEstilizada() {
         }
       );
       if (!response.ok) throw new Error("Não foi possível reservar o livro.");
-      const data = await response.json();
+      window.location.reload()
     } catch (err) {
       setErro(err.message);
     }
@@ -439,7 +441,7 @@ export default function PaginaLivroEstilizada() {
             <button
               type="button"
               onClick={!desativado ? () => reservarLivro(livro._id) : null}
-              disabled={true}
+              disabled={desativado}
               className={` flex-1 inline-flex items-center justify-center px-1 py-3 rounded-full 
     ${
       desativado
