@@ -12,4 +12,5 @@ router.delete('/cancelarReserva/:reservaId', auth, reservaController.cancelarRes
 //Recuperar reservas do vendedor.
 router.get('/reservas',auth, reservaController.getAllUserReservas);
 
+router.get('/minhas-reservas', auth, reservaController.getMyReservas);
 module.exports = router

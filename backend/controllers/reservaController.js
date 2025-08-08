@@ -201,3 +201,34 @@ exports.getAllUserReservas = async(req,res) => {
     }
 }
 
+
+exports.getMyReservas = async(req,res) => {
+    try{
+        const userId = req.user._id;
+
+        if(!mongoose.Types.ObjectId.isValid(userId)){
+            return res.status(400).json({message: 'ID do usuário precisa ser um id válido.'})
+        }
+
+        const reservas = await Reserva.find({reservadorid: userId })
+        .populate("vendedorid", "nome")
+        .populate("livroid", "titulo fotos preco condicao")
+        .populate("reservadorid", "nome")
+        ;
+
+        if(!reservas){
+            throw new Error("Erro durante fetch das reservas.")
+        }
+
+        return res.status(200).json({
+            message: 'Reservas do vendedor encontradas com sucesso!',
+            data: reservas
+        })
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+}
+

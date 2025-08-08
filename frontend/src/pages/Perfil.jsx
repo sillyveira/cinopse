@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Star, StarHalf } from "lucide-react";
 import { useAuth } from '../context/Auth';
+import axios from "axios";
 
 // Página integrada com o backend para exibir o perfil de um usuário específico
 // http://urldofrontend.com/usuarios/:id_usuario
@@ -15,6 +16,29 @@ function Perfil() {
   // Estados para armazenar dados do usuário e controle de carregamento
   const [usuario, setUsuario] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [reservas, setReservas] = useState([]);
+
+
+  const openModal = () => {
+    setShowModal(true);
+    fetchReservas();
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  const fetchReservas = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/r/minhas-reservas", {
+        withCredentials: true
+      });
+      setReservas(response.data.data);
+    } catch (error) {
+      console.error("Erro ao buscar reservas:", error);
+    }
+  };
 
   // Hook para buscar dados do id do usuário que está na url quando entra na página 
   useEffect(() => {
@@ -92,16 +116,63 @@ function Perfil() {
         </div>
         <div className="w-full md:w-auto">
 
-          { user && user.id === id_usuario ? (     
-          <button 
-            onClick={irParaMeusSalvos}
-            className="w-full md:w-auto px-6 py-3 bg-red-900 text-white rounded-lg hover:bg-red-800 transition-colors duration-300 font-medium"
-          >
-            Meus Salvos
-          </button>
-          ) : ( 
+          {user && user.id === id_usuario ? (
+            <div className='flex gap-2'>
+              <button
+                onClick={openModal}
+                className="w-full md:w-auto px-6 py-3 bg-red-900 text-white rounded-lg hover:bg-red-800 transition-colors duration-300 font-medium"
+              >
+                Minha reserva
+              </button>
+              <button
+                onClick={irParaMeusSalvos}
+                className="w-full md:w-auto px-6 py-3 bg-red-900 text-white rounded-lg hover:bg-red-800 transition-colors duration-300 font-medium"
+              >
+                Meus Salvos
+              </button>
+            </div>
+          ) : (
             <></>
           )}
+
+          {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white w-11/12 md:w-2/3 lg:w-1/2 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Minhas Reservas</h2>
+            <button
+              onClick={closeModal}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+            >
+              ✕
+            </button>
+            {reservas.length > 0 ? (
+              <ul className="space-y-4">
+                {reservas.map((reserva) => (
+                  <li
+                    key={reserva._id}
+                    className="p-4 border rounded-lg shadow-sm bg-gray-50"
+                  >
+                    <p>
+                      <strong>Livro:</strong> {reserva.livroid?.titulo || "Título não disponível"}
+                    </p>
+                    <p>
+                      <strong>Data de Expiração:</strong>{" "}
+                      {new Date(reserva.data_exp).toLocaleDateString()}
+                    </p>
+                    <p>
+                      <strong>Status:</strong>{" "}
+                      {reserva.statusreserva ? "Ativa" : "Expirada"}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600">Nenhuma reserva encontrada.</p>
+            )}
+          </div>
+        </div>
+      )}
 
         </div>
       </div>
