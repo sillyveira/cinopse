@@ -1,27 +1,45 @@
 import React, { useState, useEffect } from 'react'
-import CardLivro from '../componentes/descobrir/CardLivro'
+import CardReserva from '../componentes/CardReserva'
 
-export default function MeusAnuncios() {
-  const [bookmarks, setBookmarks] = useState([])
+export default function Reservas() {
+  const [reservas, setReservas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const reservasMockadas = [
+    {
+      id: 1,
+      titulo: 'Scott Pilgrim vs. o mundo - Vol 2',
+      reservador: {
+        nome: 'Weslley Silveira',
+      },
+      livro: {
+        preco: 25,
+        condicao: 'Usado'
+      },
+      vendedor: {
+        nome: 'Iranildo Felipe'
+      }
+
+    }
+  ]
+
   useEffect(() => {
-    const fetchAnuncios = async () => {
+    const fetchReservas = async () => {
       try {
         setLoading(true)
-        const response = await fetch('http://localhost:3000/usuarios/meus-anuncios', {
+        const response = await fetch('http://localhost:3000/r/reservas', {
           credentials: 'include'
         })
 
         if (!response.ok) {
-          throw new Error('Erro ao buscar anúncios')
+          throw new Error('Erro ao buscar reservas')
         }
 
         const data = await response.json()
-        console.log(data)
-        setBookmarks(data)
-        console.log('Meus anúncios:', bookmarks)
+        console.log(data.data)
+        setReservas(data.data)
+        console.log('Minhas reservas:', reservas)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -29,13 +47,13 @@ export default function MeusAnuncios() {
       }
     }
 
-    fetchAnuncios();
+    fetchReservas();
   }, [])
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-96">
-        <div className="text-gray-600">Carregando seus anúncios...</div>
+        <div className="text-gray-600">Carregando seus anúncios reservados...</div>
       </div>
     )
   }
@@ -49,9 +67,9 @@ export default function MeusAnuncios() {
 
   }
 
-  const apagarLivro = async (id) => {
+  const cancelarReserva = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3000/livros/${id}`, {
+      const response = await fetch(`http://localhost:3000/r/cancelarReserva/${id}`, {
         credentials: 'include',
         method: 'DELETE'
       })
@@ -59,7 +77,9 @@ export default function MeusAnuncios() {
       if (!response.ok) {
         throw new Error('Erro ao deletar anúncio')
       }
-        
+
+      const data = await response.json()
+      
       // Recarregar a página após deletar
       window.location.reload()
     } catch (error) {
@@ -70,22 +90,22 @@ export default function MeusAnuncios() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Meus Anúncios</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Meus Anúncios Reservados</h1>
 
-      {bookmarks.length === 0 ? (
+      {reservas.length === 0 ? (
         <div className="flex justify-center items-center min-h-96">
-          <div className="text-gray-600">Nenhum anúncio ainda.</div>
+          <div className="text-gray-600">Ninguém reservou seu(s) anúncio(s) ainda.</div>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-          {bookmarks.map((book) => (
-            <div key={book._id} className="flex flex-col">
-              <CardLivro book={book} />
-              <button 
-                onClick={() => apagarLivro(book._id)}
+          {reservas.map((resv) => (
+            <div key={resv._id} className="flex flex-col">
+              <CardReserva reserva={resv} />
+              <button
+                onClick={() => cancelarReserva(resv._id)}
                 className="mt-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium py-2 rounded transition-colors duration-200"
               >
-                Apagar
+                Cancelar Reserva
               </button>
             </div>
           ))}

@@ -7,5 +7,9 @@ const router = express.Router()
 router.post('/:LivroId', auth, reservaController.criarReserva)
 
 // Cancelar Reserva
-router.post('/cancelarReserva/:reservaId/:livroId/:vendaPendenteId', auth, reservaController.cancelarReserva)
+router.delete('/cancelarReserva/:reservaId', auth, reservaController.cancelarReserva)
+
+//Recuperar reservas do vendedor.
+router.get('/reservas',auth, reservaController.getAllUserReservas);
+
 module.exports = router

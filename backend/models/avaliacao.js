@@ -26,7 +26,7 @@ const avaliacaoSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  nomeLivro: {
+  tituloLivro: {
     type: String,
     required: true,
     trim: true

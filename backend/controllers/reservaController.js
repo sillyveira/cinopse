@@ -15,7 +15,7 @@ async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
 }
 
 // Função que cria uma venda com confirmação pendente no banco de dados
-async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId}){
+async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId, tituloLivro}){
     return new Venda({
         compradorId: compradorId,
         vendedorId: vendedorId,
@@ -24,7 +24,8 @@ async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId})
         dataConfirmacao: Date.now(),
         status: 'espera',
         confirmacaoVendedor: false,
-        avaliacao: 0
+        avaliacao: 0,
+        tituloLivro: tituloLivro
     })
 }
 
@@ -39,13 +40,20 @@ exports.criarReserva = async (req, res) => {
         if(!req.user || !req.user._id) { return res.status(400).json({ erro: 'Usuário não autenticado' })} // verificando se o usuário está autenticado
         
         const livro = await Livro.findById(LivroId).session(session)
+       
         
         if(!livro) throw new Error('Livro não encontrado')  // Verificando se o livro existe
         if(!livro.vendedor || !mongoose.Types.ObjectId.isValid(livro.vendedor)) throw new Error('O livro não possui vendedor válido')
         if(!livro.disponibilidade) throw new Error('Livro indisponível para reserva')  // Verificando se o Livro ja está reservado
-        
+        if(!livro.titulo) throw new Error('Livro sem nome')
+
+        const tituloLivro = livro.titulo
         const vendedorId = livro.vendedor
-        const reservadorId = req.user._id
+        const reservadorId = req.user.id
+
+        // Impedindo que vendedores reservem seus próprios anúncios
+        if(livro.vendedor.equals(reservadorId)) throw new Error ('[INVÁLIDO]: Vendedores não podem reservar seus próprios anúncios')
+
         const nova_reserva = await criarNovaReserva({reservadorId, vendedorId, LivroId})
 
         livro.disponibilidade = false // Livro indisponível
@@ -58,7 +66,8 @@ exports.criarReserva = async (req, res) => {
             compradorId: reservadorId,
             vendedorId: vendedorId, 
             livroId: LivroId, 
-            reservaId: nova_reserva._id
+            reservaId: nova_reserva._id,
+            tituloLivro: tituloLivro
         })
 
         await venda_pendente.save({session})
@@ -72,10 +81,13 @@ exports.criarReserva = async (req, res) => {
         }catch(erro){
             console.error(erro)
             await session.abortTransaction()
-
+            
+            if(erro.message === 'Livro sem nome') return res.status(400).json({ erro: erro.message })
             if(erro.message === 'Livro não encontrado'){ return res.status(404).json({ erro: erro.message })}
             if(erro.message === 'Livro indisponível para reserva'){return res.status(400).json({ erro: erro.message })}
             if(erro.message === 'O livro não possui vendedor válido'){ return res.status(404).json({ erro: erro.message })}
+            if(erro.message === '[INVÁLIDO]: Vendedores não podem reservar seus próprios anúncios') return res.status(400).json({ erro: erro.message })
+
             return res.status(500).json({ erro: '[ERRO]: ao reservar Livro'})
         } finally {
             await session.endSession()
@@ -87,50 +99,42 @@ exports.cancelarReserva = async (req,res) => {
     const session = await mongoose.startSession();
     session.startTransaction()
     try{
-        const { reservaId, livroId, vendaPendenteId } = req.params
+        const { reservaId } = req.params
       
         const userId = req.user.id
         
-        // verificando se os ids da venda pendente, reserva e livro são válidos
-        if(!mongoose.Types.ObjectId.isValid(vendaPendenteId)) return res.status(400).json({ erro: 'Id venda pendente inválido' });
-        if(!mongoose.Types.ObjectId.isValid(reservaId)) return res.status(400).json({ erro: 'Id de reserva não encontrado'})
-        if(!mongoose.Types.ObjectId.isValid(livroId)) return res.status(400).json({ erro: 'Id do livro não encontrado' })
+        // verificando se o id do livro é válido
+        if(!mongoose.Types.ObjectId.isValid(reservaId)) return res.status(400).json({ erro: 'Id de reserva é inválido'})
         
-        // Procurando ids de reserva, livro e venda pendente
-        const [reserva, livro, vendaP] = await Promise.all([
-            Reserva.findById(reservaId).session(session),
-            Livro.findById(livroId).session(session),
-            Venda.findById(vendaPendenteId).session(session)
-        ])
-    
-        // Verificando se eles são válidos
-        if(!reserva){ return res.status(404).json({ erro: 'Id reserva inválido' })}
-        if(!livro){ return res.status(404).json({ erro: 'Id livro inválido'})}
-        if(!vendaP){ return res.status(404).json({ erro: 'Id venda pendente inválido'})}
+        const reserva = await Reserva.findById(reservaId);
 
-        // Verificando se a reserva e o livro presentes na venda pendente são correspondentes para seguir com o cancelamento de reserva
-        if (!(new mongoose.Types.ObjectId(reservaId)).equals(vendaP.reservaId)) throw new Error('ID da reserva não corresponde a essa venda pendente')
-        if (!(new mongoose.Types.ObjectId(livroId)).equals(vendaP.livroId)) throw new Error('ID do Livro não corresponde a essa venda pendente')
+        if(!reserva){ return res.status(404).json({ erro: 'Reserva não encontrada.' })}
         
         const isvendedor = reserva.vendedorid.toString() === userId
         const isreservador = reserva.reservadorid.toString() === userId
         
         // barrando cancelas de usuários que não sejam o vendedor e o reservador 
-        if(!isreservador && !isvendedor) throw  new Error ('Apenas Vendedor e Reservador podem efetuar o cancelamento')
+        if(!isreservador && !isvendedor) throw  new Error ('Apenas Vendedor ou Reservador podem efetuar o cancelamento')
         if(!reserva.statusreserva) throw new Error ('Reserva cancelada ou expirada')
-        if(reserva.livroid.toString() !== livroId) throw new Error ('Livro não correspondente a reserva')
+        const vendaReserva = await Venda.findOne({reservaId: reserva._id})
+        const livro = await Livro.findById(reserva.livroid)
 
-        livro.disponibilidade = true 
+        if(!vendaReserva){
+            return res.status(404).json({message:'Venda não encontrada.'})
+        }
+
+        if(!livro){
+            return res.status(404).json({message: 'Livro não encontrado.'})
+        }
+        livro.disponibilidade = true
         reserva.statusreserva = false
 
-        await Promise.all([
-            livro.save({session}),
-            Reserva.findByIdAndDelete(reserva._id, { session }), // excluindo reserva em caso de cancelamento
-            Venda.findByIdAndDelete(vendaPendenteId, { session }) // excluindo venda pendente em caso de cancelamento da reserva
-        ])
-        
-        await session.commitTransaction()
+        await livro.save({ session });
+        await Reserva.findByIdAndDelete(reserva._id, { session });
+        await Venda.findByIdAndDelete(vendaReserva._id, { session });
 
+
+        await session.commitTransaction()
         return res.status(200).json({ 
             message: 'Reserva cancelada com Sucesso!',
             data: {
@@ -164,3 +168,36 @@ exports.cancelarReserva = async (req,res) => {
         await session.endSession() // finalizando sessao
     }
 }
+
+exports.getAllUserReservas = async(req,res) => {
+    try{
+        const userId = req.user._id;
+
+        console.log(userId)
+
+        if(!mongoose.Types.ObjectId.isValid(userId)){
+            return res.status(400).json({message: 'ID do usuário precisa ser um id válido.'})
+        }
+
+        const reservas = await Reserva.find({vendedorid: userId })
+        .populate("vendedorid", "nome")
+        .populate("livroid", "titulo fotos preco condicao")
+        .populate("reservadorid", "nome")
+        ;
+
+        if(!reservas){
+            throw new Error("Erro durante fetch das reservas.")
+        }
+
+        return res.status(200).json({
+            message: 'Reservas do vendedor encontradas com sucesso!',
+            data: reservas
+        })
+    } catch(error){
+        console.error(error)
+        return res.status(500).json({
+            message: error.message
+        });
+    }
+}
+
