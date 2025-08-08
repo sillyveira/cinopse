@@ -1,6 +1,5 @@
 const Livro = require('../models/livro')
 const Reserva = require('../models/reserva')
-const venda = require('../models/venda')
 const Venda = require('../models/venda')
 const mongoose = require('mongoose')
 
@@ -16,7 +15,7 @@ async function criarNovaReserva({reservadorId, vendedorId, LivroId}){
 }
 
 // Função que cria uma venda com confirmação pendente no banco de dados
-async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId}){
+async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId, tituloLivro}){
     return new Venda({
         compradorId: compradorId,
         vendedorId: vendedorId,
@@ -25,7 +24,8 @@ async function criarVendaPendente({compradorId, vendedorId, livroId, reservaId})
         dataConfirmacao: Date.now(),
         status: 'espera',
         confirmacaoVendedor: false,
-        avaliacao: 0
+        avaliacao: 0,
+        tituloLivro: tituloLivro
     })
 }
 
@@ -40,13 +40,20 @@ exports.criarReserva = async (req, res) => {
         if(!req.user || !req.user._id) { return res.status(400).json({ erro: 'Usuário não autenticado' })} // verificando se o usuário está autenticado
         
         const livro = await Livro.findById(LivroId).session(session)
+       
         
         if(!livro) throw new Error('Livro não encontrado')  // Verificando se o livro existe
         if(!livro.vendedor || !mongoose.Types.ObjectId.isValid(livro.vendedor)) throw new Error('O livro não possui vendedor válido')
         if(!livro.disponibilidade) throw new Error('Livro indisponível para reserva')  // Verificando se o Livro ja está reservado
-        
+        if(!livro.titulo) throw new Error('Livro sem nome')
+
+        const tituloLivro = livro.titulo
         const vendedorId = livro.vendedor
         const reservadorId = req.user.id
+
+        // Impedindo que vendedores reservem seus próprios anúncios
+        if(livro.vendedor.equals(reservadorId)) throw new Error ('[INVÁLIDO]: Vendedores não podem reservar seus próprios anúncios')
+
         const nova_reserva = await criarNovaReserva({reservadorId, vendedorId, LivroId})
 
         livro.disponibilidade = false // Livro indisponível
@@ -59,7 +66,8 @@ exports.criarReserva = async (req, res) => {
             compradorId: reservadorId,
             vendedorId: vendedorId, 
             livroId: LivroId, 
-            reservaId: nova_reserva._id
+            reservaId: nova_reserva._id,
+            tituloLivro: tituloLivro
         })
 
         await venda_pendente.save({session})
@@ -73,10 +81,13 @@ exports.criarReserva = async (req, res) => {
         }catch(erro){
             console.error(erro)
             await session.abortTransaction()
-
+            
+            if(erro.message === 'Livro sem nome') return res.status(400).json({ erro: erro.message })
             if(erro.message === 'Livro não encontrado'){ return res.status(404).json({ erro: erro.message })}
             if(erro.message === 'Livro indisponível para reserva'){return res.status(400).json({ erro: erro.message })}
             if(erro.message === 'O livro não possui vendedor válido'){ return res.status(404).json({ erro: erro.message })}
+            if(erro.message === '[INVÁLIDO]: Vendedores não podem reservar seus próprios anúncios') return res.status(400).json({ erro: erro.message })
+
             return res.status(500).json({ erro: '[ERRO]: ao reservar Livro'})
         } finally {
             await session.endSession()
