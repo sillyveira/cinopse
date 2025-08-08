@@ -36,6 +36,11 @@ const vendaSchema = new mongoose.Schema({
     avaliacao: {
         type: Number,
         default: 0
+    },
+    tituloLivro: {
+        type: String, 
+        ref: 'Livro',
+        required: true
     }
 }, {
     timestamps: true // Adiciona createdAt e updatedAt
