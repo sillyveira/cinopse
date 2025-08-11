@@ -16,10 +16,10 @@ const seedDatabase = async () => {
     const categoriaCount = await Categoria.countDocuments();
     const avaliacaoCount = await Avaliacao.countDocuments();
 
-    if (livroCount > 0 && userCount > 0 && categoriaCount > 0 && avaliacaoCount > 0) {
-      console.log('Banco de dados já possui dados. Cancelando seed...');
-      return;
-    }
+    // if (livroCount > 0 && userCount > 0 && categoriaCount > 0) {
+    //   console.log('Banco de dados já possui dados. Cancelando seed...');
+    //   return;
+    // }
 
     // Limpar coleções existentes
     await Livro.deleteMany({});
