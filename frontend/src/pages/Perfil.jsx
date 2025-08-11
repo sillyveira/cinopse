@@ -137,15 +137,17 @@ function Perfil() {
 
           {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white w-11/12 md:w-2/3 lg:w-1/2 p-6 rounded-lg shadow-lg">
+            <div className='flex flex-row justify-between items-center'>
             <h2 className="text-2xl font-bold text-gray-800 mb-4">Minhas Reservas</h2>
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+              className="relative text-gray-500 hover:text-gray-800 self-center"
             >
               ✕
             </button>
+            </div>
             {reservas.length > 0 ? (
               <ul className="space-y-4">
                 {reservas.map((reserva) => (
