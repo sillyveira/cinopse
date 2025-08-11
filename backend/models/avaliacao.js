@@ -26,11 +26,11 @@ const avaliacaoSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  tituloLivro: {
-    type: String,
-    required: true,
-    trim: true
-  }
+  // tituloLivro: {
+  //   type: String,
+  //   required: true,
+  //   trim: true
+  // }
 }, {
   timestamps: true,
   collection: 'avaliacoes'
