@@ -3,47 +3,31 @@ const mongoose = require('mongoose')
 const Livro = require('../models/livro')
 const Reserva = require ('../models/reserva')
 const User = require('../models/user')
+const Categoria = require('../models/categoria')
+const Salvos = require('../models/salvos')
 
 exports.confirmarVenda = async (req, res) => {
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
         // Extrai os IDs da requisição
-        const { LivroId, ReservaId, VendaPendenteId } = req.params
-        const userId = req.user._id;
+        const { reservaId } = req.params
+        const userId = req.user.id;
 
-        // Validação dos IDs
-        if(!mongoose.Types.ObjectId.isValid(LivroId)) return res.status(400).json({ erro: 'Id livro não encontrado'})
-        if(!mongoose.Types.ObjectId.isValid(ReservaId)) return res.status(400).json({ erro: 'Id de reserva não encontrado'})
-        if(!mongoose.Types.ObjectId.isValid(VendaPendenteId)) return res.status(400).json({ erro: 'Id de venda pendente não encontrado'})
+        if(!mongoose.Types.ObjectId.isValid(reservaId)) return res.status(400).json({ erro: 'Id de reserva não encontrado'})
 
         // Busca os documentos com sessão ativa
-        const [reserva, livro, venda] = await Promise.all([
-            Reserva.findById(ReservaId).session(session),
-            Livro.findById(LivroId).session(session),
-            Venda.findById(VendaPendenteId).session(session)
-        ])
+        const reserva = await Reserva.findById(reservaId)
+
+        if(!reserva){
+            return res.status(404).json({message: 'Reserva não encontrada.'})
+        }
        
-        // Verificações de existência
-        if(!reserva) throw new Error('Id reserva inválido')
-        if(!livro) throw new Error('Id Livro inválido')
-        if(!venda) throw new Error('Id Venda Pendente inválido')
+        const venda = await Venda.findOne({reservaId: reserva._id})
 
-        // Verifica se o livro da reserva corresponde ao informado
-        if(!reserva.livroid.equals(LivroId)) throw new Error ('ID do livro diferente do Id livro reservado')
-
-        // Verifica se a venda está associada à reserva
-        if (!venda.reservaId.equals(ReservaId)) throw new Error('Venda não corresponde à reserva enviada')
-
-        // Busca os usuários (comprador e vendedor)
-        const [vendedor] = await Promise.all([
-            User.findById(reserva.vendedorid).session(session)
-        ])
-
-        if(!vendedor) throw new Error('Id Vendedor inválido')
-
-        // Verifica se a reserva ainda está válida
-        if(!reserva.statusreserva) throw new Error ('Reserva expirada ou Cancelada')
+        if(!venda){
+            return res.status(404).json({message: 'Venda não encontrada.'})
+        }   
         
         // Verifica se quem está tentando confirmar é o vendedor
         const isVendedor = venda.vendedorId.equals(userId)
@@ -57,19 +41,39 @@ exports.confirmarVenda = async (req, res) => {
         if (isVendedor) venda.confirmacaoVendedor = true
 
         venda.status = 'Confirmada' // Venda confirmada
+        const livro = await Livro.findById(reserva.livroid).populate("categoria", "_id nome")
+        if(!livro){
+            return res.status(404).json({message: 'O livro não foi encontrado.'})
+        }
+        const categoria = await Categoria.findById(livro.categoria._id)
 
+        if(!categoria){
+            return res.status(404).json({message: "A categoria deste livro não foi encontrada."})
+        }
         // Salva as alterações na venda e na reserva
-        await Promise.all([
-            venda.save({ session }),
-            reserva.save({ session})
-        ])
+        categoria.quantidade--;
+
+        const userV = await User.findById(reserva.vendedorid)
+        const userC = await User.findById(reserva.reservadorid)
+
+        if(!userV || !userC){
+            return res.status(404).json({message: 'Usuário não encontrado.'})
+        }
+
+        userV.quantidadeLivrosVendidos++;
+        userC.quantidadeLivrosComprados++;
+        
+        await Salvos.deleteMany({ livro: reserva.livroid }).session(session)
+        await userV.save({session})
+        await userC.save({session})
+        await venda.save({ session })
+        await reserva.save({ session})
+        await categoria.save({session})
 
         // Exclui a reserva se a venda foi concluída
         if(venda.status === 'Confirmada'){
-            await Promise.all([
-                Reserva.findByIdAndDelete(ReservaId, { session }), // deleta reserva após a confirmação
-                Livro.findByIdAndDelete(LivroId, { session }) // deleta o anúncio do livro (livro) do bd
-            ]) 
+            await Reserva.findByIdAndDelete(reserva._id, { session }) // deleta reserva após a confirmação
+            await Livro.findByIdAndDelete(reserva.livroid, { session }) // deleta o anúncio do livro (livro) do bd
         }
 
         // Finaliza a transação com sucesso
@@ -85,6 +89,8 @@ exports.confirmarVenda = async (req, res) => {
     } catch(erro){
         // Em caso de erro, desfaz a transação
         await session.abortTransaction()
+
+        console.log(erro)
 
         // Erros específicos tratados com mensagens apropriadas
         if (erro.message === 'Id reserva inválido') {

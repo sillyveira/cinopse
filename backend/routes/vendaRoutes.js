@@ -4,6 +4,6 @@ const VendaController = require('../controllers/vendaController') // Ajuste o pa
 const authMiddleware = require('../middlewares/auth')
 
 // Exemplo de rota protegida que usa o middleware de autenticação
-router.put('/:LivroId/:ReservaId/:VendaPendenteId', authMiddleware, VendaController.confirmarVenda);
+router.put('/:reservaId', authMiddleware, VendaController.confirmarVenda);
 
 module.exports = router;
