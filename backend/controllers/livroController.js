@@ -77,7 +77,7 @@ const livroController = {
       const livro = await Livro.findById(req.params.id)
         .populate("categoria", "nome emoji")
         .populate("vendedor", "nome foto email");
-      livro.incrementarVisualizacoes(); // Incrementa visualizações ao buscar o livro
+      //livro.incrementarVisualizacoes(); // Incrementa visualizações ao buscar o livro
 
       if (!livro) {
         return res.status(404).json({ error: "Livro não encontrado" });
@@ -95,7 +95,7 @@ const livroController = {
 
   // Incrementar visualizações
   // TODO: (pensando em apagar, deixarei aqui para ideias futuras, mas talvez seja melhor fatorar usando o método de busca por ID, pois já significaria que o usuário está visualizando o livro.)
-  incrementarVisualizacoes: async (req, res) => {
+/*   incrementarVisualizacoes: async (req, res) => {
     try {
       const livro = await Livro.findById(req.params.id);
       if (!livro) {
@@ -117,7 +117,7 @@ const livroController = {
       });
     }
   },
-
+ */
   // TODO: Criar novo livro (método somente para teste, pois o usuário não deve criar livros diretamente, vai ter o formulário com algumas verificações.)
   createLivro: async (req, res) => {
     try {

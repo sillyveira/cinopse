@@ -59,7 +59,7 @@ export default function MeusSalvos() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
           {bookmarks.map((book) => (
-            <CardLivro key={book._id} book={book.livro} />
+            <CardLivro key={book._id} book={book.livro}/>
           ))}
         </div>
       )}

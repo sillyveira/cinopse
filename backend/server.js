@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('./cron/limparExpirados')
 
 const express = require('express');
 const http = require('http');
@@ -16,6 +17,9 @@ const livroRoutes = require('./routes/livroRoutes');
 const userRoutes = require('./routes/userRoutes');
 const conversaRoutes = require('./routes/conversaRoutes');
 const mensagemRoutes = require('./routes/mensagemRoutes');
+const reservaRoutes = require('./routes/reservaRoutes');
+const vendaRoutes = require('./routes/vendaRoutes')
+const avaliacaoRoutes = require('./routes/avaliacaoRoutes')
 
 const app = express();
 const server = http.createServer(app);
@@ -49,6 +53,10 @@ app.use('/livros', livroRoutes);
 app.use('/usuarios', userRoutes);
 app.use('/conversas', conversaRoutes);
 app.use('/mensagens', mensagemRoutes);
+app.use('/r', reservaRoutes )
+app.use('/cv', vendaRoutes)
+app.use('/av', avaliacaoRoutes)
+
 
 // iniciar Websocket.
 socketHandler(io);

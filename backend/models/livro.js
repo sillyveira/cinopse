@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
-
+// livro schema
 const livroSchema = new mongoose.Schema({
+  reservador: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  disponibilidade: {
+    type: Boolean,
+    default: true
+  },
   titulo: {
     type: String,
     required: true,
@@ -64,6 +73,16 @@ const livroSchema = new mongoose.Schema({
   dataPublicacao: {
     type: Date,
     default: Date.now
+  },
+  nPaginas: {
+    type: Number,
+    default: null
+  },
+  idioma: {
+    type: String,
+    trim: true,
+    maxlength: 1000,
+    default: null
   }
 }, {
   timestamps: true,
@@ -82,11 +101,12 @@ livroSchema.pre(['find', 'findOne'], function() {
       .populate('vendedor', 'nome foto');
 });
 
-// Método para incrementar visualizações
+/* // Método para incrementar visualizações
 livroSchema.methods.incrementarVisualizacoes = function() {
   this.visualizacoes += 1;
   return this.save();
 };
+ */
 
 // Método estático para buscar por categoria
 livroSchema.statics.findByCategoria = function(categoriaId) {

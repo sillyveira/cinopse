@@ -9,7 +9,7 @@ router.get('/', livroController.getAllLivros);
 router.get('/:id', livroController.getLivroById);
 
 // POST /livros/:id/visualizar - Incrementar visualizações
-router.post('/:id/visualizar', livroController.incrementarVisualizacoes);
+// router.post('/:id/visualizar', livroController.incrementarVisualizacoes);
 
 // POST /livros - Criar novo livro
 router.post('/', livroController.createLivro);

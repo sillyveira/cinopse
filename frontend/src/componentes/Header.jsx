@@ -121,6 +121,13 @@ function Header() {
                         >
                           <span>Meus anúncios</span>
                         </a>
+                        <a
+                          href={`/reservas`}
+                          className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => setContextMenuOpen(false)}
+                        >
+                          <span>Meus reservados</span>
+                        </a>
                         <button
                           onClick={() => {
                             logout();

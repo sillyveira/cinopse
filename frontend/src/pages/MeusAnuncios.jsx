@@ -59,9 +59,7 @@ export default function MeusAnuncios() {
       if (!response.ok) {
         throw new Error('Erro ao deletar anúncio')
       }
-
-      const data = await response.json()
-      
+        
       // Recarregar a página após deletar
       window.location.reload()
     } catch (error) {
