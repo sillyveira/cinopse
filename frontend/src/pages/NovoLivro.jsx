@@ -1,10 +1,11 @@
 import CardImagem from "../componentes/cardImagem"
 import { Plus, UploadCloud, Trash2Icon } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ReactDOM from 'react-dom'
 import { useAuth } from "../context/Auth"
 import imageCompression from 'browser-image-compression'
 import { Navigate, useNavigate } from "react-router-dom"
+import { fetchCategorias } from "../services/api"
 
 async function compressPhoto(file){
     const compressedImage = await imageCompression(file, {
@@ -89,6 +90,7 @@ export default function NovoLivro(){
     const [error,setError] = useState({})
     const [isOpen, setIsOpen] = useState(false)
     const [isDisa, setIsDisa] = useState(false)
+    const [fCategorias, setFCategorias] = useState([])
 
     const {user} = useAuth()
 
@@ -97,6 +99,25 @@ export default function NovoLivro(){
     newImages[index] = file;
     setFotos(newImages);
   };
+
+    useEffect(()=> {
+        const getCategorias = async()=> {
+            try{
+                const categorias = await fetchCategorias();
+
+                if(!categorias){
+                    throw new Error("Erro ao recuperar categorias.")
+                }
+
+                setFCategorias(categorias)
+            } catch(error){
+                console.log(error.message)
+            }
+        }
+
+        getCategorias();
+    }, [])
+
 
     const toggleModal = () => setIsOpen(isOpen => !isOpen);
 
@@ -261,16 +282,10 @@ export default function NovoLivro(){
                         }}
                         >
                             <option value="" disabled>Categoria</option>
-                            <option value="686fb86f96e939526ac6332d">Acadêmico</option>
-                            <option value="686fb86f96e939526ac6332a">Aventura</option>
-                            <option value="686fb86f96e939526ac63326">Ação</option>
-                            <option value="686fb86f96e939526ac63324">Comédia</option>
-                            <option value="686fb86f96e939526ac63329">Drama</option>
-                            <option value="686fb86f96e939526ac63328">Ficção</option>
-                            <option value="686fb86f96e939526ac6332b">Mistério</option>
-                            <option value="686fb86f96e939526ac63325">Romance</option>
-                            <option value="686fb86f96e939526ac63327">Terror</option>
-                            <option value="686fb86f96e939526ac6332c">Técnico</option>
+                            {fCategorias.map((cats, index)=> (
+                                <option id={index} value={cats._id}>{cats.nome}</option>
+                            ))}
+                            
                         </select>
                         {error['categoria'] && (<p className="text-red-500">{error['categoria']}</p>)}
                     </div>

@@ -6,24 +6,6 @@ export default function Reservas() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const reservasMockadas = [
-    {
-      id: 1,
-      titulo: 'Scott Pilgrim vs. o mundo - Vol 2',
-      reservador: {
-        nome: 'Weslley Silveira',
-      },
-      livro: {
-        preco: 25,
-        condicao: 'Usado'
-      },
-      vendedor: {
-        nome: 'Iranildo Felipe'
-      }
-
-    }
-  ]
-
   useEffect(() => {
     const fetchReservas = async () => {
       try {
@@ -88,6 +70,23 @@ export default function Reservas() {
     }
   }
 
+  const confirmarVenda = async(id) => {
+    try{
+      const response = await fetch(`http://localhost:3000/cv/${id}`, {
+        credentials: 'include',
+        method: 'PUT'
+      })
+
+      if(!response.ok){
+        throw new Error("Erro ao confirmar venda.")
+      }
+      window.location.reload();
+    }catch(error){
+      console.error(error.message)
+      alert("Erro ao confirmar venda.")
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Meus Anúncios Reservados</h1>
@@ -106,6 +105,12 @@ export default function Reservas() {
                 className="mt-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium py-2 rounded transition-colors duration-200"
               >
                 Cancelar Reserva
+              </button>
+              <button
+                onClick={() => confirmarVenda(resv._id)}
+                className="mt-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded transition-colors duration-200"
+              >
+                Confirmar Venda
               </button>
             </div>
           ))}

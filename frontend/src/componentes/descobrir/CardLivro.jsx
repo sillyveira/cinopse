@@ -38,10 +38,6 @@ const CardLivro = ({ book }) => {
           {/* Informação do vendedor */}
           <div className="flex justify-between items-center pt-1 border-t border-gray-100">
             <span className="text-xs text-gray-600 truncate max-w-[60%]">{book.vendedor.nome}</span>
-            <div className="flex items-center space-x-1">
-              <Star className="w-3 h-3 text-yellow-500 fill-current" />
-              <span className="text-xs text-yellow-600 font-medium">{'4.5'}</span>
-            </div>
           </div>
         </div>
       </div>
